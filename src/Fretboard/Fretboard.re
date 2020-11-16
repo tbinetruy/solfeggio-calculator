@@ -28,15 +28,6 @@ let build_tunning = tunning =>
     ]
   };
 
-let standardTunning = [
-  {pitchClass: E, accidental: Natural}, // high E
-  {pitchClass: B, accidental: Natural},
-  {pitchClass: G, accidental: Natural},
-  {pitchClass: D, accidental: Natural},
-  {pitchClass: A, accidental: Natural},
-  {pitchClass: E, accidental: Natural},
-];
-
 let rec createString = (startNoteHeight, length, acc) => {
   switch (length) {
   | 0 => acc

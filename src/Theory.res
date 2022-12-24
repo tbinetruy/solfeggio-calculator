@@ -337,6 +337,28 @@ let buildChord = (root, chord) =>
     root->stackIntervalsAbsolutely(list{minorThird, perfectFifth, majorSixth})
   };
 
+type scale =
+  | MajorScale
+
+let string_of_scale = scale =>
+  switch (scale) {
+    | MajorScale => "Major Scale"
+  }
+
+let buildScale = (root, scale) =>
+  switch (scale) {
+  | MajorScale => root->stackIntervalsRelatively(list{
+      majorSecond,
+      majorSecond,
+      minorSecond,
+      majorSecond,
+      majorSecond,
+      majorSecond,
+      minorSecond,
+    });
+  }
+
+
 let buildMajorScale = root =>
   root->stackIntervalsRelatively(list{
     majorSecond,

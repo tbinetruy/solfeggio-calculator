@@ -41,10 +41,27 @@ module Select = {
 let make = () => {
   let (rootPitchClass, setRootPitchClass) = React.useState(() => C);
   let (accidental, setAccidental) = React.useState(() => Flat);
-  let (chordType, setChordType) = React.useState(() => MajorTriad);
+  let (chordType, _setChordType) = React.useState(() => None);
+  let (scaleType, _setScaleType) = React.useState(() => None);
   let (tunning, setTunning) = React.useState(() => Standard);
   let root = {pitchClass: rootPitchClass, accidental};
-  let notes = root->buildChord(chordType);
+
+  let notes = switch (chordType, scaleType) {
+    | (Some(chordType), Some(_)) => root->buildChord(chordType)
+    | (Some(chordType), None) => root->buildChord(chordType)
+    | (None, Some(scaleType)) => root->buildScale(scaleType)
+    | (None, None) => list{}
+  }
+
+  let setChordType = (f) => {
+    _setChordType(f)
+    _setScaleType(_ => None)
+  }
+
+  let setScaleType = (f) => {
+    _setScaleType(f)
+    _setChordType(_ => None)
+  }
 
   let tunningSpec =
     [Standard, Ukulele]
@@ -71,7 +88,7 @@ let make = () => {
       );
 
   let chordTypeSpec =
-    [
+    list{
       MajorTriad,
       MinorTriad,
       AugmentedTriad,
@@ -92,16 +109,29 @@ let make = () => {
       SeventhDiminishedFifth,
       MajorSixth,
       MinorSixth,
-    ]
-    ->Belt.Array.reduce(StringMap.empty, (acc, el) =>
-        acc |> StringMap.add(el->string_of_chord, () => setChordType(_ => el))
+    }
+    ->Belt.List.map(el => Some(el))
+    ->Belt.List.add(None)
+    ->Belt.List.reduce(StringMap.empty, (acc, el) =>
+        acc |> StringMap.add(el->Belt.Option.mapWithDefault("None", string_of_chord), () => setChordType(_ => el))
+      );
+
+  let scaleTypeSpec =
+    list{
+      MajorScale,
+    }
+    ->Belt.List.map(el => Some(el))
+    ->Belt.List.add(None)
+    ->Belt.List.reduce(StringMap.empty, (acc, el) =>
+        acc |> StringMap.add(el->Belt.Option.mapWithDefault("None", string_of_scale), () => setScaleType(_ => el))
       );
 
   <div>
     <Select spec=tunningSpec value={tunning->string_of_tunning} />
     <Select spec=rootPitchSpec value={rootPitchClass->string_of_pitchClass} />
     <Select spec=accidentalSpec value={accidental->string_of_accidental} />
-    <Select spec=chordTypeSpec value={chordType->string_of_chord} />
+    <Select spec=chordTypeSpec value={chordType->Belt.Option.mapWithDefault("None", string_of_chord)} />
+    <Select spec=scaleTypeSpec value={scaleType->Belt.Option.mapWithDefault("None", string_of_scale)} />
     <div> {React.string(notes |> string_of_notes)} </div>
     <Fretboard notes tunning />
   </div>;

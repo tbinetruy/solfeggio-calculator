@@ -1,3 +1,6 @@
+open Belt;
+
+
 type pitchClass =
   | C
   | D
@@ -221,13 +224,13 @@ let rec stackIntervalsRelatively = (root, intervals) => {
       | list{_} => list{}
       | list{_, ...rest} => rest
       };
-    list{root, nextNote}->Belt.List.concat(subChord);
+    list{root, nextNote}->List.concat(subChord);
   };
 };
 
 let stackIntervalsAbsolutely = (root, intervals) =>
-  intervals->Belt.List.reduce(list{root}, (acc, interval) => {
-    acc->Belt.List.concat(list{note_of_interval(root, interval)})
+  intervals->List.reduce(list{root}, (acc, interval) => {
+    acc->List.concat(list{note_of_interval(root, interval)})
   });
 
 let getTonic = notes =>
@@ -371,4 +374,4 @@ let buildMajorScale = root =>
   });
 
 let string_of_notes = notes =>
-  notes->Belt.List.reduce("", (acc, note) => acc ++ (note |> string_of_note));
+  notes->List.reduce("", (acc, note) => acc ++ (note |> string_of_note));

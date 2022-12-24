@@ -1,4 +1,6 @@
 open Theory;
+open Belt;
+
 
 type tunning =
   | Standard
@@ -35,7 +37,7 @@ let rec createString = (startNoteHeight, length, acc) => {
     createString(
       startNoteHeight + 1,
       n - 1,
-      acc->Belt.List.concat(list{mod(startNoteHeight, 12)}),
+      acc->List.concat(list{mod(startNoteHeight, 12)}),
     )
   };
 };
@@ -46,8 +48,8 @@ let drawNotesOnString = (chord, fretZeroNote) => {
   let fretZeroHight = fretZeroNote |> semitones_of_note;
   fretZeroHight
   ->createString(13, list{})
-  ->Belt.List.map(currentSemitone => {
-      chord->Belt.List.reduce(None, (acc, note) =>
+  ->List.map(currentSemitone => {
+      chord->List.reduce(None, (acc, note) =>
         switch (acc) {
         | None =>
           let noteSemitone =
@@ -108,18 +110,18 @@ let drawString = (notes, stringRootNote) => {
     );
 
   let tonic = getTonic(notes);
-  tonic->Belt.Option.mapWithDefault(
+  tonic->Option.mapWithDefault(
     <div> {React.string("Error")} </div>, tonic => {
     notes
     ->drawNotesOnString(stringRootNote)
-    ->Belt.List.mapWithIndex((i, note) =>
+    ->List.mapWithIndex((i, note) =>
         <div style=wrapperStyle key={i->string_of_int}>
           <div style=stringStyle />
           {switch (note) {
            | Some(n) =>
              tonic
              ->interval_of_notes(n)
-             ->Belt.Option.mapWithDefault(
+             ->Option.mapWithDefault(
                  <div> {React.string("error")} </div>, i => {
                  <div style={getNoteStyle(i)}>
                    {React.string(n->string_of_note)}
@@ -129,21 +131,21 @@ let drawString = (notes, stringRootNote) => {
            }}
         </div>
       )
-    ->Belt.List.toArray
+    ->List.toArray
     ->React.array
   });
 };
 
 let drawFretboard = (notes, tunning) => {
   tunning
-  ->Belt.List.mapWithIndex((i, fretZeroNote) =>
+  ->List.mapWithIndex((i, fretZeroNote) =>
       <div
         style={ReactDOM.Style.make(~display="flex", ())}
         key={i->string_of_int}>
         {notes->drawString(fretZeroNote)}
       </div>
     )
-  ->Belt.List.toArray
+  ->List.toArray
   ->React.array;
 };
 

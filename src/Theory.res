@@ -361,17 +361,5 @@ let buildScale = (root, scale) =>
     });
   }
 
-
-let buildMajorScale = root =>
-  root->stackIntervalsRelatively(list{
-    majorSecond,
-    majorSecond,
-    minorSecond,
-    majorSecond,
-    majorSecond,
-    majorSecond,
-    minorSecond,
-  });
-
 let string_of_notes = notes =>
   notes->List.reduce("", (acc, note) => acc ++ (note |> string_of_note));

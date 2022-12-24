@@ -43,7 +43,7 @@ module Select = {
 let make = () => {
   let (rootPitchClass, setRootPitchClass) = React.useState(() => C);
   let (accidental, setAccidental) = React.useState(() => Flat);
-  let (chordType, _setChordType) = React.useState(() => None);
+  let (chordType, _setChordType) = React.useState(() => Some(MajorSeventh));
   let (scaleType, _setScaleType) = React.useState(() => None);
   let (tunning, setTunning) = React.useState(() => Standard);
   let root = {pitchClass: rootPitchClass, accidental};

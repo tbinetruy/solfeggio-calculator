@@ -94,7 +94,7 @@ let semitonesBetweenNotes = (noteA, noteB) => {
 };
 
 type semitone = int;
-type interval =
+type interval_class =
   | Unison
   | Second(semitone)
   | Third(semitone)
@@ -143,6 +143,62 @@ let majorSixth = Sixth(0);
 let diminishedSeventh = Seventh(-2);
 let minorSeventh = Seventh(-1);
 let majorSeventh = Seventh(0);
+
+type interval =
+  | MinorSecond
+  | MajorSecond
+  | MinorThird
+  | MajorThird
+  | DiminishedFourth
+  | PerfectFourth
+  | AugmentedFourth
+  | DiminishedFifth
+  | PerfectFifth
+  | AugmentedFifth
+  | MinorSixth
+  | MajorSixth
+  | DiminishedSeventh
+  | MinorSeventh
+  | MajorSeventh
+
+let string_of_interval = interval =>
+  switch interval {
+    | MinorSecond => "minorSecond"
+    | MajorSecond => "majorSecond"
+    | MinorThird => "minorThird"
+    | MajorThird => "majorThird"
+    | DiminishedFourth => "diminishedFourth"
+    | PerfectFourth => "perfectFourth"
+    | AugmentedFourth => "augmentedFourth"
+    | DiminishedFifth => "diminishedFifth"
+    | PerfectFifth => "perfectFifth"
+    | AugmentedFifth => "augmentedFifth"
+    | MinorSixth => "minorSixth"
+    | MajorSixth => "majorSixth"
+    | DiminishedSeventh => "diminishedSeventh"
+    | MinorSeventh => "minorSeventh"
+    | MajorSeventh => "majorSeventh"
+  }
+
+
+let interval_class_of_interval = interval =>
+  switch interval {
+    | MinorSecond => Second(-1)
+    | MajorSecond => Second(0)
+    | MinorThird => Third(-1)
+    | MajorThird => Third(0)
+    | DiminishedFourth => Fourth(-1)
+    | PerfectFourth => Fourth(0)
+    | AugmentedFourth => Fourth(1)
+    | DiminishedFifth => Fifth(-1)
+    | PerfectFifth => Fifth(0)
+    | AugmentedFifth => Fifth(1)
+    | MinorSixth => Sixth(-1)
+    | MajorSixth => Sixth(0)
+    | DiminishedSeventh => Seventh(-2)
+    | MinorSeventh => Seventh(-1)
+    | MajorSeventh => Seventh(0)
+  }
 
 let semitones_of_interval = interval =>
   switch (interval) {
@@ -212,24 +268,32 @@ let note_of_interval = (rootNote, interval) => {
   {pitchClass: newPitchClass, accidental};
 };
 
-let rec stackIntervalsRelatively = (root, intervals) => {
-  switch (intervals) {
-  | list{} => list{root}
-  | list{interval} => list{root, note_of_interval(root, interval)}
-  | list{interval, ...rest} =>
-    let nextNote = note_of_interval(root, interval);
-    let subChord =
-      switch (stackIntervalsRelatively(nextNote, rest)) {
-      | list{}
-      | list{_} => list{}
-      | list{_, ...rest} => rest
-      };
-    list{root, nextNote}->List.concat(subChord);
-  };
+let stackIntervalsRelatively = (root, intervals) => {
+  let intervals = intervals
+    ->List.map(el => el->interval_class_of_interval)
+
+  let rec stackClassIntervalsRelatively = (root, class_intervals) => {
+    switch (class_intervals) {
+    | list{} => list{root}
+    | list{interval} => list{root, note_of_interval(root, interval)}
+    | list{interval, ...rest} =>
+      let nextNote = note_of_interval(root, interval);
+      let subChord =
+        switch (stackClassIntervalsRelatively(nextNote, rest)) {
+        | list{}
+        | list{_} => list{}
+        | list{_, ...rest} => rest
+        };
+      list{root, nextNote}->List.concat(subChord);
+    };
+  }
+  stackClassIntervalsRelatively(root, intervals)
 };
 
 let stackIntervalsAbsolutely = (root, intervals) =>
-  intervals->List.reduce(list{root}, (acc, interval) => {
+  intervals
+    ->List.map(el => el->interval_class_of_interval)
+    ->List.reduce(list{root}, (acc, interval) => {
     acc->List.concat(list{note_of_interval(root, interval)})
   });
 
@@ -239,6 +303,25 @@ let getTonic = notes =>
   | list{head}
   | list{head, ..._} => Some(head)
   };
+
+let buildInterval = (root, interval) =>
+  switch interval {
+    | MinorSecond => root->stackIntervalsRelatively(list{MinorSecond})
+    | MajorSecond => root->stackIntervalsRelatively(list{MajorSecond})
+    | MinorThird => root->stackIntervalsRelatively(list{MinorThird})
+    | MajorThird => root->stackIntervalsRelatively(list{MajorThird})
+    | DiminishedFourth => root->stackIntervalsRelatively(list{DiminishedFourth})
+    | PerfectFourth => root->stackIntervalsRelatively(list{PerfectFourth})
+    | AugmentedFourth => root->stackIntervalsRelatively(list{AugmentedFourth})
+    | DiminishedFifth => root->stackIntervalsRelatively(list{DiminishedFifth})
+    | PerfectFifth => root->stackIntervalsRelatively(list{PerfectFifth})
+    | AugmentedFifth => root->stackIntervalsRelatively(list{AugmentedFifth})
+    | MinorSixth => root->stackIntervalsRelatively(list{MinorSixth})
+    | MajorSixth => root->stackIntervalsRelatively(list{MajorSixth})
+    | DiminishedSeventh => root->stackIntervalsRelatively(list{DiminishedSeventh})
+    | MinorSeventh => root->stackIntervalsRelatively(list{MinorSeventh})
+    | MajorSeventh => root->stackIntervalsRelatively(list{MajorSeventh})
+  }
 
 type chord =
   | MajorTriad
@@ -288,56 +371,56 @@ let string_of_chord = chord =>
 
 let buildChord = (root, chord) =>
   switch (chord) {
-  | MajorTriad => root->stackIntervalsRelatively(list{majorThird, minorThird})
-  | MinorTriad => root->stackIntervalsRelatively(list{minorThird, majorThird})
-  | AugmentedTriad => root->stackIntervalsRelatively(list{majorThird, majorThird})
+  | MajorTriad => root->stackIntervalsRelatively(list{MajorThird, MinorThird})
+  | MinorTriad => root->stackIntervalsRelatively(list{MinorThird, MajorThird})
+  | AugmentedTriad => root->stackIntervalsRelatively(list{MajorThird, MajorThird})
   | DiminishedTriad =>
-    root->stackIntervalsRelatively(list{minorThird, minorThird})
+    root->stackIntervalsRelatively(list{MinorThird, MinorThird})
   | SuspendedTriad =>
-    root->stackIntervalsRelatively(list{perfectFourth, majorSecond})
-  | PowerChord => root->stackIntervalsRelatively(list{perfectFifth})
-  | AugmentedPowerChord => root->stackIntervalsRelatively(list{augmentedFifth})
-  | DiminishedPowerChord => root->stackIntervalsRelatively(list{diminishedFifth})
+    root->stackIntervalsRelatively(list{PerfectFourth, MajorSecond})
+  | PowerChord => root->stackIntervalsRelatively(list{PerfectFifth})
+  | AugmentedPowerChord => root->stackIntervalsRelatively(list{AugmentedFifth})
+  | DiminishedPowerChord => root->stackIntervalsRelatively(list{DiminishedFifth})
   | MajorSeventh =>
-    root->stackIntervalsRelatively(list{majorThird, minorThird, majorThird})
+    root->stackIntervalsRelatively(list{MajorThird, MinorThird, MajorThird})
   | DominanteSeventh =>
-    root->stackIntervalsRelatively(list{majorThird, minorThird, minorThird})
+    root->stackIntervalsRelatively(list{MajorThird, MinorThird, MinorThird})
   | MinorSeventhMajor =>
-    root->stackIntervalsRelatively(list{minorThird, majorThird, majorThird})
+    root->stackIntervalsRelatively(list{MinorThird, MajorThird, MajorThird})
   | MinorSeventh =>
-    root->stackIntervalsRelatively(list{minorThird, majorThird, minorThird})
+    root->stackIntervalsRelatively(list{MinorThird, MajorThird, MinorThird})
   | AugmentedMajorSeventh =>
-    root->stackIntervalsRelatively(list{majorThird, majorThird, minorThird})
+    root->stackIntervalsRelatively(list{MajorThird, MajorThird, MinorThird})
   | HalfDiminishedSeventh =>
     root->stackIntervalsAbsolutely(list{
-      minorThird,
-      diminishedFifth,
-      minorSeventh,
+      MinorThird,
+      DiminishedFifth,
+      MinorSeventh,
     })
   | DiminishedSeventh =>
     root->stackIntervalsAbsolutely(list{
-      minorThird,
-      diminishedFifth,
-      diminishedSeventh,
+      MinorThird,
+      DiminishedFifth,
+      DiminishedSeventh,
     })
   | SuspendedSeventh =>
     root->stackIntervalsAbsolutely(list{
-      perfectFourth,
-      perfectFifth,
-      minorSeventh,
+      PerfectFourth,
+      PerfectFifth,
+      MinorSeventh,
     })
   | SeventhAugmentedFifth =>
-    root->stackIntervalsAbsolutely(list{majorThird, augmentedFifth, minorSeventh})
+    root->stackIntervalsAbsolutely(list{MajorThird, AugmentedFifth, MinorSeventh})
   | SeventhDiminishedFifth =>
     root->stackIntervalsAbsolutely(list{
-      majorThird,
-      diminishedFifth,
-      minorSeventh,
+      MajorThird,
+      DiminishedFifth,
+      MinorSeventh,
     })
   | MajorSixth =>
-    root->stackIntervalsAbsolutely(list{majorThird, perfectFifth, majorSixth})
+    root->stackIntervalsAbsolutely(list{MajorThird, PerfectFifth, MajorSixth})
   | MinorSixth =>
-    root->stackIntervalsAbsolutely(list{minorThird, perfectFifth, majorSixth})
+    root->stackIntervalsAbsolutely(list{MinorThird, PerfectFifth, MajorSixth})
   };
 
 type scale =
@@ -351,13 +434,13 @@ let string_of_scale = scale =>
 let buildScale = (root, scale) =>
   switch (scale) {
   | MajorScale => root->stackIntervalsRelatively(list{
-      majorSecond,
-      majorSecond,
-      minorSecond,
-      majorSecond,
-      majorSecond,
-      majorSecond,
-      minorSecond,
+      MajorSecond,
+      MajorSecond,
+      MinorSecond,
+      MajorSecond,
+      MajorSecond,
+      MajorSecond,
+      MinorSecond,
     });
   }
 

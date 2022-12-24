@@ -45,23 +45,36 @@ let make = () => {
   let (accidental, setAccidental) = React.useState(() => Flat);
   let (chordType, _setChordType) = React.useState(() => Some(MajorSeventh));
   let (scaleType, _setScaleType) = React.useState(() => None);
+  let (intervalType, _setIntervalType) = React.useState(() => None);
   let (tunning, setTunning) = React.useState(() => Standard);
   let root = {pitchClass: rootPitchClass, accidental};
 
-  let notes = switch (chordType, scaleType) {
-    | (Some(chordType), Some(_)) => root->buildChord(chordType)
-    | (Some(chordType), None) => root->buildChord(chordType)
-    | (None, Some(scaleType)) => root->buildScale(scaleType)
-    | (None, None) => list{}
+  let notes = switch (intervalType, chordType, scaleType) {
+    | (Some(intervalType), Some(_), Some(_)) => root->buildInterval(intervalType)
+    | (Some(intervalType), None, Some(_)) => root->buildInterval(intervalType)
+    | (Some(intervalType), Some(_), None) => root->buildInterval(intervalType)
+    | (Some(intervalType), None, None) => root->buildInterval(intervalType)
+    | (None, Some(chordType), Some(_)) => root->buildChord(chordType)
+    | (None, Some(chordType), None) => root->buildChord(chordType)
+    | (None, None, Some(scaleType)) => root->buildScale(scaleType)
+    | (None, None, None) => list{}
   }
 
   let setChordType = (f) => {
     _setChordType(f)
+    _setIntervalType(_ => None)
     _setScaleType(_ => None)
   }
 
   let setScaleType = (f) => {
     _setScaleType(f)
+    _setIntervalType(_ => None)
+    _setChordType(_ => None)
+  }
+
+  let setIntervalType = (f) => {
+    _setIntervalType(f)
+    _setScaleType(_ => None)
     _setChordType(_ => None)
   }
 
@@ -87,6 +100,30 @@ let make = () => {
         |> StringMap.add(el->string_of_accidental, () =>
              setAccidental(_ => el)
            )
+      );
+
+  let intervalTypeSpec =
+    [
+      MinorSecond,
+      MajorSecond,
+      MinorThird,
+      MajorThird,
+      DiminishedFourth,
+      PerfectFourth,
+      AugmentedFourth,
+      DiminishedFifth,
+      PerfectFifth,
+      AugmentedFifth,
+      MinorSixth,
+      MajorSixth,
+      DiminishedSeventh,
+      MinorSeventh,
+      MajorSeventh,
+    ]
+    ->Array.map(el => Some(el))
+    ->Array.concat([None])
+    ->Array.reduceU(StringMap.empty, (. acc, el) =>
+        acc |> StringMap.add(el->Option.mapWithDefault("None", string_of_interval), () => setIntervalType(_ => el))
       );
 
   let chordTypeSpec =
@@ -132,6 +169,7 @@ let make = () => {
     <Select spec=tunningSpec value={tunning->string_of_tunning} />
     <Select spec=rootPitchSpec value={rootPitchClass->string_of_pitchClass} />
     <Select spec=accidentalSpec value={accidental->string_of_accidental} />
+    <Select spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", string_of_interval)} />
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", string_of_chord)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
     <div> {React.string(notes |> string_of_notes)} </div>

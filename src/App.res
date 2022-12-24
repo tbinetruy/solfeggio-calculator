@@ -90,7 +90,7 @@ let make = () => {
       );
 
   let chordTypeSpec =
-    list{
+    [
       MajorTriad,
       MinorTriad,
       AugmentedTriad,
@@ -111,20 +111,20 @@ let make = () => {
       SeventhDiminishedFifth,
       MajorSixth,
       MinorSixth,
-    }
-    ->List.map(el => Some(el))
-    ->List.add(None)
-    ->List.reduce(StringMap.empty, (acc, el) =>
+    ]
+    ->Array.map(el => Some(el))
+    ->Array.concat([None])
+    ->Array.reduceU(StringMap.empty, (. acc, el) =>
         acc |> StringMap.add(el->Option.mapWithDefault("None", string_of_chord), () => setChordType(_ => el))
       );
 
   let scaleTypeSpec =
-    list{
+    [
       MajorScale,
-    }
-    ->List.map(el => Some(el))
-    ->List.add(None)
-    ->List.reduce(StringMap.empty, (acc, el) =>
+    ]
+    ->Array.map(el => Some(el))
+    ->Array.concat([None])
+    ->Array.reduceU(StringMap.empty, (. acc, el) =>
         acc |> StringMap.add(el->Option.mapWithDefault("None", string_of_scale), () => setScaleType(_ => el))
       );
 

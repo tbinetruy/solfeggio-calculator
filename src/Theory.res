@@ -33,75 +33,79 @@ module Accidental = {
 
 open Accidental
 
-type note =
-  | C(accidental)
-  | D(accidental)
-  | E(accidental)
-  | F(accidental)
-  | G(accidental)
-  | A(accidental)
-  | B(accidental);
+module Note = {
+  type note =
+    | C(accidental)
+    | D(accidental)
+    | E(accidental)
+    | F(accidental)
+    | G(accidental)
+    | A(accidental)
+    | B(accidental);
 
-let setAccidental = (note, accidental) =>
+  let setAccidental = (note, accidental) =>
+      switch note {
+        | C(_) => C(accidental)
+        | D(_) => D(accidental)
+        | E(_) => E(accidental)
+        | F(_) => F(accidental)
+        | G(_) => G(accidental)
+        | A(_) => A(accidental)
+        | B(_) => B(accidental)
+      }
+
+  let is_same_note_familly = (noteA, noteB) =>
+      switch (noteA, noteB) {
+        | (C(_), C(_))
+        | (D(_), D(_))
+        | (E(_), E(_))
+        | (F(_), F(_))
+        | (G(_), G(_))
+        | (A(_), A(_))
+        | (B(_), B(_)) => true
+        | (_, _) => false
+      }
+
+  let string_of_note = note =>
+    switch (note) {
+    | C(accidental) => "C" ++ accidental->to_string
+    | D(accidental) => "D" ++ accidental->to_string
+    | E(accidental) => "E" ++ accidental->to_string
+    | F(accidental) => "F" ++ accidental->to_string
+    | G(accidental) => "G" ++ accidental->to_string
+    | A(accidental) => "A" ++ accidental->to_string
+    | B(accidental) => "B" ++ accidental->to_string
+    };
+
+  let getNextNote = note =>
     switch note {
-      | C(_) => C(accidental)
-      | D(_) => D(accidental)
-      | E(_) => E(accidental)
-      | F(_) => F(accidental)
-      | G(_) => G(accidental)
-      | A(_) => A(accidental)
-      | B(_) => B(accidental)
-    }
+    | C(accidental) => D(accidental)
+    | D(accidental) => E(accidental)
+    | E(accidental) => F(accidental)
+    | F(accidental) => G(accidental)
+    | G(accidental) => A(accidental)
+    | A(accidental) => B(accidental)
+    | B(accidental) => C(accidental)
+    };
 
-let is_same_note_familly = (noteA, noteB) =>
-    switch (noteA, noteB) {
-      | (C(_), C(_))
-      | (D(_), D(_))
-      | (E(_), E(_))
-      | (F(_), F(_))
-      | (G(_), G(_))
-      | (A(_), A(_))
-      | (B(_), B(_)) => true
-      | (_, _) => false
-    }
+  let semitones_of_note = note =>
+    switch (note) {
+    | C(accidental) => 0 + accidental->to_semitones
+    | D(accidental) => 2 + accidental->to_semitones
+    | E(accidental) => 4 + accidental->to_semitones
+    | F(accidental) => 5 + accidental->to_semitones
+    | G(accidental) => 7 + accidental->to_semitones
+    | A(accidental) => 9 + accidental->to_semitones
+    | B(accidental) => 11 + accidental->to_semitones
+    };
+}
 
-let string_of_note = note =>
-  switch (note) {
-  | C(accidental) => "C" ++ accidental->to_string
-  | D(accidental) => "D" ++ accidental->to_string
-  | E(accidental) => "E" ++ accidental->to_string
-  | F(accidental) => "F" ++ accidental->to_string
-  | G(accidental) => "G" ++ accidental->to_string
-  | A(accidental) => "A" ++ accidental->to_string
-  | B(accidental) => "B" ++ accidental->to_string
-  };
-
-let getNextNote = note =>
-  switch note {
-  | C(accidental) => D(accidental)
-  | D(accidental) => E(accidental)
-  | E(accidental) => F(accidental)
-  | F(accidental) => G(accidental)
-  | G(accidental) => A(accidental)
-  | A(accidental) => B(accidental)
-  | B(accidental) => C(accidental)
-  };
+open Note
 
 let rec getNthPitchClass = (rootPitchClass, n) =>
   switch (n) {
   | 0 => rootPitchClass
   | _ => getNthPitchClass(rootPitchClass->getNextNote, n - 1)
-  };
-
-let semitones_of_note = note =>
-  switch (note) {
-  | C(accidental) => 0 + accidental->to_semitones
-  | D(accidental) => 2 + accidental->to_semitones
-  | E(accidental) => 4 + accidental->to_semitones
-  | F(accidental) => 5 + accidental->to_semitones
-  | G(accidental) => 7 + accidental->to_semitones
-  | A(accidental) => 9 + accidental->to_semitones
-  | B(accidental) => 11 + accidental->to_semitones
   };
 
 let semitonesBetweenNotes = (noteA, noteB) => {

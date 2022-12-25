@@ -1,5 +1,6 @@
 open Theory;
 open Accidental;
+open Note;
 open Fretboard;
 
 module StringMap =
@@ -48,7 +49,7 @@ let make = () => {
   let (scaleType, _setScaleType) = React.useState(() => None);
   let (intervalType, _setIntervalType) = React.useState(() => None);
   let (tunning, setTunning) = React.useState(() => Standard);
-  let root = rootPitchClass->Theory.setAccidental(accidental)
+  let root = rootPitchClass->Note.setAccidental(accidental)
 
   let notes = switch (intervalType, chordType, scaleType) {
     | (Some(intervalType), Some(_), Some(_)) => root->buildInterval(intervalType)

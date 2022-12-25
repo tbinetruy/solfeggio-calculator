@@ -1,4 +1,5 @@
 open Theory;
+open Note;
 open Belt;
 
 

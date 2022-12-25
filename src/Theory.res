@@ -31,9 +31,10 @@ module Accidental = {
   }
 }
 
-open Accidental
 
 module Note = {
+  open Accidental
+
   type note =
     | C(accidental)
     | D(accidental)
@@ -66,7 +67,7 @@ module Note = {
         | (_, _) => false
       }
 
-  let string_of_note = note =>
+  let to_string = note =>
     switch (note) {
     | C(accidental) => "C" ++ accidental->to_string
     | D(accidental) => "D" ++ accidental->to_string
@@ -88,7 +89,7 @@ module Note = {
     | B(accidental) => C(accidental)
     };
 
-  let semitones_of_note = note =>
+  let to_semitones = note =>
     switch (note) {
     | C(accidental) => 0 + accidental->to_semitones
     | D(accidental) => 2 + accidental->to_semitones
@@ -98,20 +99,20 @@ module Note = {
     | A(accidental) => 9 + accidental->to_semitones
     | B(accidental) => 11 + accidental->to_semitones
     };
+
+  let rec getNthNote = (rootNote, n) =>
+    switch (n) {
+    | 0 => rootNote
+    | _ => getNthNote(rootNote->getNextNote, n - 1)
+    };
+
+  let semitonesBetweenNotes = (noteA, noteB) => {
+    let delta = (noteB->to_semitones) - (noteA->to_semitones);
+    delta < 0 ? 12 + delta : delta;
+  };
 }
 
 open Note
-
-let rec getNthPitchClass = (rootPitchClass, n) =>
-  switch (n) {
-  | 0 => rootPitchClass
-  | _ => getNthPitchClass(rootPitchClass->getNextNote, n - 1)
-  };
-
-let semitonesBetweenNotes = (noteA, noteB) => {
-  let delta = (noteB->semitones_of_note) - (noteA->semitones_of_note);
-  delta < 0 ? 12 + delta : delta;
-};
 
 type semitone = int;
 type interval_class =
@@ -242,13 +243,13 @@ let interval_of_notes = (noteA, noteB) => {
 let note_of_interval = (rootNote, interval) =>
   switch (interval) {
   | Unison => rootNote
-  | Second(_) => rootNote->getNthPitchClass(1)
-  | Third(_) => rootNote->getNthPitchClass(2)
-  | Fourth(_) => rootNote->getNthPitchClass(3)
-  | Fifth(_) => rootNote->getNthPitchClass(4)
-  | Sixth(_) => rootNote->getNthPitchClass(5)
-  | Seventh(_) => rootNote->getNthPitchClass(6)
-  | Octave => rootNote->getNthPitchClass(7)
+  | Second(_) => rootNote->getNthNote(1)
+  | Third(_) => rootNote->getNthNote(2)
+  | Fourth(_) => rootNote->getNthNote(3)
+  | Fifth(_) => rootNote->getNthNote(4)
+  | Sixth(_) => rootNote->getNthNote(5)
+  | Seventh(_) => rootNote->getNthNote(6)
+  | Octave => rootNote->getNthNote(7)
   };
 
 
@@ -258,12 +259,12 @@ let note_of_interval = (rootNote, interval) => {
   let actualSemitoneDifference = semitonesBetweenNotes(rootNote, newNote);
   let accidental =
     switch (targetSemitoneDifference - actualSemitoneDifference) {
-    | (-2) => DoubleFlat
-    | (-1) => Flat
-    | 1 => Sharp
-    | 2 => DoubleSharp
+    | (-2) => Accidental.DoubleFlat
+    | (-1) => Accidental.Flat
+    | 1 => Accidental.Sharp
+    | 2 => Accidental.DoubleSharp
     | 0
-    | _ => Natural
+    | _ => Accidental.Natural
     };
   newNote->setAccidental(accidental)
 };
@@ -445,7 +446,7 @@ let buildScale = (root, scale) =>
   }
 
 let string_of_notes = notes =>
-  notes->List.reduce("", (acc, note) => acc ++ (note |> string_of_note));
+  notes->List.reduce("", (acc, note) => acc ++ (note |> to_string));
 
 let rec relativeIntervals_of_notes = (notes, acc) => {
   switch notes {

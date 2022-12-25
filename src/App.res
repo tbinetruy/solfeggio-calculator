@@ -1,5 +1,4 @@
 open Theory;
-open Accidental;
 open Note;
 open Fretboard;
 
@@ -43,8 +42,8 @@ module Select = {
 
 @react.component
 let make = () => {
-  let (rootPitchClass, setRootPitchClass) = React.useState(() => C(Natural));
-  let (accidental, setAccidental) = React.useState(() => Flat);
+  let (rootPitchClass, setRootPitchClass) = React.useState(() => C(Accidental.Natural));
+  let (accidental, setAccidental) = React.useState(() => Accidental.Flat);
   let (chordType, _setChordType) = React.useState(() => Some(MajorSeventh));
   let (scaleType, _setScaleType) = React.useState(() => None);
   let (intervalType, _setIntervalType) = React.useState(() => None);
@@ -90,16 +89,16 @@ let make = () => {
     [C(Natural), D(Natural), E(Natural), F(Natural), G(Natural), A(Natural), B(Natural)]
     ->Array.reduce(StringMap.empty, (acc, el) =>
         acc
-        |> StringMap.add(el->string_of_note, () =>
+        |> StringMap.add(el->to_string, () =>
              setRootPitchClass(_ => el)
            )
       );
 
   let accidentalSpec =
-    [Flat, Natural, Sharp]
+    [Accidental.Flat, Accidental.Natural, Accidental.Sharp]
     ->Array.reduce(StringMap.empty, (acc, accidental) =>
         acc
-        |> StringMap.add(accidental->to_string, () =>
+        |> StringMap.add(accidental->Accidental.to_string, () =>
              setAccidental(_ => accidental)
            )
       );
@@ -169,8 +168,8 @@ let make = () => {
 
   <div>
     <Select spec=tunningSpec value={tunning->string_of_tunning} />
-    <Select spec=rootPitchSpec value={rootPitchClass->string_of_note} />
-    <Select spec=accidentalSpec value={accidental->to_string} />
+    <Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} />
+    <Select spec=accidentalSpec value={accidental->Accidental.to_string} />
     <Select spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", string_of_interval)} />
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", string_of_chord)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />

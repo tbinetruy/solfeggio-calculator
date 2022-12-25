@@ -46,7 +46,7 @@ let rec createString = (startNoteHeight, length, acc) => {
 let rootNote = E(Natural)
 
 let drawNotesOnString = (chord, fretZeroNote) => {
-  let fretZeroHight = fretZeroNote |> semitones_of_note;
+  let fretZeroHight = fretZeroNote->to_semitones;
   fretZeroHight
   ->createString(13, list{})
   ->List.map(currentSemitone => {
@@ -54,9 +54,9 @@ let drawNotesOnString = (chord, fretZeroNote) => {
         switch (acc) {
         | None =>
           let noteSemitone =
-            note->semitones_of_note < 0
-              ? mod((12 + note->semitones_of_note), 12)
-              : mod(note->semitones_of_note, 12);
+            note->to_semitones < 0
+              ? mod((12 + note->to_semitones), 12)
+              : mod(note->to_semitones, 12);
           noteSemitone == currentSemitone ? Some(note) : None;
         | Some(_) => acc
         }
@@ -125,7 +125,7 @@ let drawString = (notes, stringRootNote) => {
              ->Option.mapWithDefault(
                  <div> {React.string("error")} </div>, i => {
                  <div style={getNoteStyle(i)}>
-                   {React.string(n->string_of_note)}
+                   {React.string(n->to_string)}
                  </div>
                })
            | None => <div />

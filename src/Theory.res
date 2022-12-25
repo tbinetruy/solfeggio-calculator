@@ -128,22 +128,6 @@ type interval_class =
    quality: 0 is either major or perfect
  */
 
-let minorSecond = Second(-1);
-let majorSecond = Second(0);
-let minorThird = Third(-1);
-let majorThird = Third(0);
-let diminishedFourth = Fourth(-1);
-let perfectFourth = Fourth(0);
-let augmentedFourth = Fourth(1);
-let diminishedFifth = Fifth(-1);
-let perfectFifth = Fifth(0);
-let augmentedFifth = Fifth(1);
-let minorSixth = Sixth(-1);
-let majorSixth = Sixth(0);
-let diminishedSeventh = Seventh(-2);
-let minorSeventh = Seventh(-1);
-let majorSeventh = Seventh(0);
-
 type interval =
   | MinorSecond
   | MajorSecond

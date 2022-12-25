@@ -1,4 +1,5 @@
 open Theory;
+open Accidental;
 open Fretboard;
 
 module StringMap =
@@ -41,13 +42,13 @@ module Select = {
 
 @react.component
 let make = () => {
-  let (rootPitchClass, setRootPitchClass) = React.useState(() => C);
+  let (rootPitchClass, setRootPitchClass) = React.useState(() => C(Natural));
   let (accidental, setAccidental) = React.useState(() => Flat);
   let (chordType, _setChordType) = React.useState(() => Some(MajorSeventh));
   let (scaleType, _setScaleType) = React.useState(() => None);
   let (intervalType, _setIntervalType) = React.useState(() => None);
   let (tunning, setTunning) = React.useState(() => Standard);
-  let root = {pitchClass: rootPitchClass, accidental};
+  let root = rootPitchClass->Theory.setAccidental(accidental)
 
   let notes = switch (intervalType, chordType, scaleType) {
     | (Some(intervalType), Some(_), Some(_)) => root->buildInterval(intervalType)
@@ -85,20 +86,20 @@ let make = () => {
       );
 
   let rootPitchSpec =
-    [C, D, E, F, G, A, B]
+    [C(Natural), D(Natural), E(Natural), F(Natural), G(Natural), A(Natural), B(Natural)]
     ->Array.reduce(StringMap.empty, (acc, el) =>
         acc
-        |> StringMap.add(el->string_of_pitchClass, () =>
+        |> StringMap.add(el->string_of_note, () =>
              setRootPitchClass(_ => el)
            )
       );
 
   let accidentalSpec =
     [Flat, Natural, Sharp]
-    ->Array.reduce(StringMap.empty, (acc, el) =>
+    ->Array.reduce(StringMap.empty, (acc, accidental) =>
         acc
-        |> StringMap.add(el->string_of_accidental, () =>
-             setAccidental(_ => el)
+        |> StringMap.add(accidental->to_string, () =>
+             setAccidental(_ => accidental)
            )
       );
 
@@ -167,8 +168,8 @@ let make = () => {
 
   <div>
     <Select spec=tunningSpec value={tunning->string_of_tunning} />
-    <Select spec=rootPitchSpec value={rootPitchClass->string_of_pitchClass} />
-    <Select spec=accidentalSpec value={accidental->string_of_accidental} />
+    <Select spec=rootPitchSpec value={rootPitchClass->string_of_note} />
+    <Select spec=accidentalSpec value={accidental->to_string} />
     <Select spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", string_of_interval)} />
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", string_of_chord)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />

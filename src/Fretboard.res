@@ -15,18 +15,18 @@ let string_of_tunning = tunning =>
 let build_tunning = tunning =>
   switch (tunning) {
   | Standard => list{
-      {pitchClass: E, accidental: Natural}, // high E
-      {pitchClass: B, accidental: Natural},
-      {pitchClass: G, accidental: Natural},
-      {pitchClass: D, accidental: Natural},
-      {pitchClass: A, accidental: Natural},
-      {pitchClass: E, accidental: Natural},
+      E(Natural),
+      B(Natural),
+      G(Natural),
+      D(Natural),
+      A(Natural),
+      E(Natural),
     }
   | Ukulele => list{
-      {pitchClass: A, accidental: Natural},
-      {pitchClass: E, accidental: Natural},
-      {pitchClass: C, accidental: Natural},
-      {pitchClass: G, accidental: Natural},
+      B(Natural),
+      E(Natural),
+      C(Natural),
+      G(Natural),
     }
   };
 
@@ -42,7 +42,7 @@ let rec createString = (startNoteHeight, length, acc) => {
   };
 };
 
-let rootNote = {pitchClass: E, accidental: Natural};
+let rootNote = E(Natural)
 
 let drawNotesOnString = (chord, fretZeroNote) => {
   let fretZeroHight = fretZeroNote |> semitones_of_note;

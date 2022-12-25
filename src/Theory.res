@@ -1,95 +1,111 @@
 open Belt;
 
 
-type pitchClass =
-  | C
-  | D
-  | E
-  | F
-  | G
-  | A
-  | B;
 
-type accidental =
-  | DoubleFlat
-  | Flat
-  | Natural
-  | Sharp
-  | DoubleSharp;
+module Accidental = {
+  type accidental =
+    | DoubleFlat
+    | Flat
+    | Natural
+    | Sharp
+    | DoubleSharp;
 
-type note = {
-  pitchClass,
-  accidental,
-};
-
-let string_of_pitchClass = pitchClass =>
-  switch (pitchClass) {
-  | C => "C"
-  | D => "D"
-  | E => "E"
-  | F => "F"
-  | G => "G"
-  | A => "A"
-  | B => "B"
+  let to_string = accidental => {
+    switch (accidental) {
+    | Flat => "b"
+    | DoubleFlat => "bb"
+    | Natural => ""
+    | DoubleSharp => "##"
+    | Sharp => "#"
+    };
   };
 
-let string_of_accidental = accidental => {
-  switch (accidental) {
-  | Flat => "b"
-  | DoubleFlat => "bb"
-  | Natural => ""
-  | DoubleSharp => "##"
-  | Sharp => "#"
-  };
-};
+  let to_semitones = accidental => {
+    switch (accidental) {
+    | DoubleFlat => -2
+    | Flat => -1
+    | Natural => 0
+    | Sharp => 1
+    | DoubleSharp => 2
+    };
+  }
+}
 
+open Accidental
+
+type note =
+  | C(accidental)
+  | D(accidental)
+  | E(accidental)
+  | F(accidental)
+  | G(accidental)
+  | A(accidental)
+  | B(accidental);
+
+let setAccidental = (note, accidental) =>
+    switch note {
+      | C(_) => C(accidental)
+      | D(_) => D(accidental)
+      | E(_) => E(accidental)
+      | F(_) => F(accidental)
+      | G(_) => G(accidental)
+      | A(_) => A(accidental)
+      | B(_) => B(accidental)
+    }
+
+let is_same_note_familly = (noteA, noteB) =>
+    switch (noteA, noteB) {
+      | (C(_), C(_))
+      | (D(_), D(_))
+      | (E(_), E(_))
+      | (F(_), F(_))
+      | (G(_), G(_))
+      | (A(_), A(_))
+      | (B(_), B(_)) => true
+      | (_, _) => false
+    }
 
 let string_of_note = note =>
-  (note.pitchClass |> string_of_pitchClass)
-  ++ (note.accidental |> string_of_accidental);
+  switch (note) {
+  | C(accidental) => "C" ++ accidental->to_string
+  | D(accidental) => "D" ++ accidental->to_string
+  | E(accidental) => "E" ++ accidental->to_string
+  | F(accidental) => "F" ++ accidental->to_string
+  | G(accidental) => "G" ++ accidental->to_string
+  | A(accidental) => "A" ++ accidental->to_string
+  | B(accidental) => "B" ++ accidental->to_string
+  };
 
-let getNextPitchClass = pitchClass =>
-  switch (pitchClass) {
-  | C => D
-  | D => E
-  | E => F
-  | F => G
-  | G => A
-  | A => B
-  | B => C
+let getNextNote = note =>
+  switch note {
+  | C(accidental) => D(accidental)
+  | D(accidental) => E(accidental)
+  | E(accidental) => F(accidental)
+  | F(accidental) => G(accidental)
+  | G(accidental) => A(accidental)
+  | A(accidental) => B(accidental)
+  | B(accidental) => C(accidental)
   };
 
 let rec getNthPitchClass = (rootPitchClass, n) =>
   switch (n) {
   | 0 => rootPitchClass
-  | _ => getNthPitchClass(rootPitchClass |> getNextPitchClass, n - 1)
-  };
-
-let semitones_of_pitchClass = pitchClass =>
-  switch (pitchClass) {
-  | C => 0
-  | D => 2
-  | E => 4
-  | F => 5
-  | G => 7
-  | A => 9
-  | B => 11
+  | _ => getNthPitchClass(rootPitchClass->getNextNote, n - 1)
   };
 
 let semitones_of_note = note =>
-  (note.pitchClass |> semitones_of_pitchClass)
-  + (
-    switch (note.accidental) {
-    | DoubleFlat => (-2)
-    | Flat => (-1)
-    | Natural => 0
-    | Sharp => 1
-    | DoubleSharp => 2
-    }
-  );
+  switch (note) {
+  | C(accidental) => 0 + accidental->to_semitones
+  | D(accidental) => 2 + accidental->to_semitones
+  | E(accidental) => 4 + accidental->to_semitones
+  | F(accidental) => 5 + accidental->to_semitones
+  | G(accidental) => 7 + accidental->to_semitones
+  | A(accidental) => 9 + accidental->to_semitones
+  | B(accidental) => 11 + accidental->to_semitones
+  };
 
 let semitonesBetweenNotes = (noteA, noteB) => {
-  let delta = (noteB |> semitones_of_note) - (noteA |> semitones_of_note);
+  let delta = (noteB->semitones_of_note) - (noteA->semitones_of_note);
   delta < 0 ? 12 + delta : delta;
 };
 
@@ -197,13 +213,10 @@ let semitones_of_interval = interval =>
   };
 
 let rec intervalNumber_of_notes = (noteA, noteB, distanceAccumulator) =>
-  if (noteA.pitchClass == noteB.pitchClass) {
+  if (noteA->is_same_note_familly(noteB)) {
     distanceAccumulator;
   } else {
-    let nextNote = {
-      pitchClass: noteA.pitchClass |> getNextPitchClass,
-      accidental: noteA.accidental,
-    };
+    let nextNote = noteA->getNextNote
     intervalNumber_of_notes(nextNote, noteB, distanceAccumulator + 1);
   };
 
@@ -222,22 +235,21 @@ let interval_of_notes = (noteA, noteB) => {
   };
 };
 
-let pitchClass_of_interval = (rootPitchClass, interval) =>
+let note_of_interval = (rootNote, interval) =>
   switch (interval) {
-  | Unison => rootPitchClass
-  | Second(_) => rootPitchClass->getNthPitchClass(1)
-  | Third(_) => rootPitchClass->getNthPitchClass(2)
-  | Fourth(_) => rootPitchClass->getNthPitchClass(3)
-  | Fifth(_) => rootPitchClass->getNthPitchClass(4)
-  | Sixth(_) => rootPitchClass->getNthPitchClass(5)
-  | Seventh(_) => rootPitchClass->getNthPitchClass(6)
-  | Octave => rootPitchClass->getNthPitchClass(7)
+  | Unison => rootNote
+  | Second(_) => rootNote->getNthPitchClass(1)
+  | Third(_) => rootNote->getNthPitchClass(2)
+  | Fourth(_) => rootNote->getNthPitchClass(3)
+  | Fifth(_) => rootNote->getNthPitchClass(4)
+  | Sixth(_) => rootNote->getNthPitchClass(5)
+  | Seventh(_) => rootNote->getNthPitchClass(6)
+  | Octave => rootNote->getNthPitchClass(7)
   };
 
 
 let note_of_interval = (rootNote, interval) => {
-  let newPitchClass = rootNote.pitchClass->pitchClass_of_interval(interval);
-  let newNote = {pitchClass: newPitchClass, accidental: Natural};
+  let newNote= rootNote->note_of_interval(interval)->setAccidental(Natural);
   let targetSemitoneDifference = interval->semitones_of_interval;
   let actualSemitoneDifference = semitonesBetweenNotes(rootNote, newNote);
   let accidental =
@@ -249,7 +261,7 @@ let note_of_interval = (rootNote, interval) => {
     | 0
     | _ => Natural
     };
-  {pitchClass: newPitchClass, accidental};
+  newNote->setAccidental(accidental)
 };
 
 let stackIntervalsRelatively = (root, intervals) => {
@@ -430,3 +442,46 @@ let buildScale = (root, scale) =>
 
 let string_of_notes = notes =>
   notes->List.reduce("", (acc, note) => acc ++ (note |> string_of_note));
+
+let rec relativeIntervals_of_notes = (notes, acc) => {
+  switch notes {
+    | list{root, next_note, ...rest} =>
+        root
+        ->interval_of_notes(next_note)
+        ->Option.mapWithDefault(list{}, interval => list{interval})
+        ->List.concat(acc)
+        ->List.concat(rest->List.add(next_note)->relativeIntervals_of_notes(list{}))
+    | list{_}
+    | list{} => list{}
+  }
+}
+
+/*
+let a = {
+  pitchClass: C,
+  accidental: Natural,
+}
+let b = {
+  pitchClass: B,
+  accidental: Natural,
+}
+let c = {
+  pitchClass: C,
+  accidental: Natural,
+}
+let intervalClass_of_string = interval =>
+    switch interval {
+    | Unison => "unison"
+    | Second(semitone) => "second(" ++ semitone->Belt.Int.toString ++ ")"
+    | Third(semitone) => "third(" ++ semitone->Belt.Int.toString ++ ")"
+    | Fourth(semitone) => "fourth(" ++ semitone->Belt.Int.toString ++ ")"
+    | Fifth(semitone) => "fifth(" ++ semitone->Belt.Int.toString ++ ")"
+    | Sixth(semitone) => "sixth(" ++ semitone->Belt.Int.toString ++ ")"
+    | Seventh(semitone) => "seventh(" ++ semitone->Belt.Int.toString ++ ")"
+    | Octave => "octave"
+    }
+let relatives = relativeIntervals_of_notes(list{a, b, c}, list{})
+let str_relatives =
+  relatives->List.reduce("", (acc, el) => acc ++ "," ++ el->intervalClass_of_string)
+Js.Console.log(str_relatives)
+*/

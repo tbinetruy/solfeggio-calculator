@@ -91,14 +91,14 @@ let drawString = (notes, stringRootNote) => {
       ~border="1px solid black",
       ~backgroundColor=
         switch (interval) {
-        | Unison
-        | Octave => "#416ab0"
-        | Second(_) => "#6290bf"
-        | Third(_) => "#80b0cc"
-        | Fourth(_) => "#9bccd5"
-        | Fifth(_) => "#b6e2dc"
-        | Sixth(_) => "#cff2e0"
-        | Seventh(_) => "#e8fce1"
+        | Interval.Unison
+        | Interval.Octave => "#416ab0"
+        | Interval.Second(_) => "#6290bf"
+        | Interval.Third(_) => "#80b0cc"
+        | Interval.Fourth(_) => "#9bccd5"
+        | Interval.Fifth(_) => "#b6e2dc"
+        | Interval.Sixth(_) => "#cff2e0"
+        | Interval.Seventh(_) => "#e8fce1"
         },
       (),
     );
@@ -121,7 +121,7 @@ let drawString = (notes, stringRootNote) => {
           {switch (note) {
            | Some(n) =>
              tonic
-             ->interval_of_notes(n)
+             ->Interval.interval_of_notes(n)
              ->Option.mapWithDefault(
                  <div> {React.string("error")} </div>, i => {
                  <div style={getNoteStyle(i)}>

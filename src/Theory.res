@@ -251,27 +251,27 @@ module Interval = {
     switch (intervalNumber_of_notes(noteA, noteB, 0)) {
     | 0 => Some(Unison)
     | 1 =>
-      (Second(Major)->to_semitones - deltaSemitones)
+      (deltaSemitones - Second(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
       ->Option.map(qualifier => Second(qualifier))
     | 2 =>
-      (Third(Major)->to_semitones - deltaSemitones)
+      (deltaSemitones - Third(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
       ->Option.map(qualifier => Third(qualifier))
     | 3 =>
-      (Fourth(Perfect)->to_semitones - deltaSemitones)
+      (deltaSemitones - Fourth(Perfect)->to_semitones)
       ->FifthQualifier.qualifier_of_semitones
       ->Option.map(qualifier => Fourth(qualifier))
     | 4 =>
-      (Fifth(Perfect)->to_semitones - deltaSemitones)
+      (deltaSemitones - Fifth(Perfect)->to_semitones)
       ->FifthQualifier.qualifier_of_semitones
       ->Option.map(qualifier => Fifth(qualifier))
     | 5 =>
-      (Sixth(Major)->to_semitones - deltaSemitones)
+      (deltaSemitones - Sixth(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
       ->Option.map(qualifier => Sixth(qualifier))
     | 6 =>
-      (Seventh(Major)->to_semitones - deltaSemitones)
+      (deltaSemitones - Seventh(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
       ->Option.map(qualifier => Seventh(qualifier))
     | 7 => Some(Octave)

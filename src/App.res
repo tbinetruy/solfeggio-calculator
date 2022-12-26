@@ -175,6 +175,7 @@ let make = () => {
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", string_of_chord)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
     <div> {React.string(notes->string_of_notes)} </div>
+    <div> {React.string(notes->relativeFormula_of_notes)} </div>
     <Fretboard notes tunning />
   </div>;
 };

@@ -492,32 +492,7 @@ let rec relativeIntervals_of_notes = (notes, acc) => {
   }
 }
 
-/*
-let a = {
-  pitchClass: C,
-  accidental: Natural,
+let relativeFormula_of_notes = notes => {
+  let relatives = relativeIntervals_of_notes(notes, list{})
+  "root" ++ relatives->List.reduce("", (acc, interval) => acc ++ " -> " ++ interval->Interval.to_string)
 }
-let b = {
-  pitchClass: B,
-  accidental: Natural,
-}
-let c = {
-  pitchClass: C,
-  accidental: Natural,
-}
-let intervalClass_of_string = interval =>
-    switch interval {
-    | Unison => "unison"
-    | Second(semitone) => "second(" ++ semitone->Belt.Int.toString ++ ")"
-    | Third(semitone) => "third(" ++ semitone->Belt.Int.toString ++ ")"
-    | Fourth(semitone) => "fourth(" ++ semitone->Belt.Int.toString ++ ")"
-    | Fifth(semitone) => "fifth(" ++ semitone->Belt.Int.toString ++ ")"
-    | Sixth(semitone) => "sixth(" ++ semitone->Belt.Int.toString ++ ")"
-    | Seventh(semitone) => "seventh(" ++ semitone->Belt.Int.toString ++ ")"
-    | Octave => "octave"
-    }
-let relatives = relativeIntervals_of_notes(list{a, b, c}, list{})
-let str_relatives =
-  relatives->List.reduce("", (acc, el) => acc ++ "," ++ el->intervalClass_of_string)
-Js.Console.log(str_relatives)
-*/

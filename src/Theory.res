@@ -1,6 +1,7 @@
 open Belt;
 
 
+let semitones_in_octave = 12
 
 module Accidental = {
   type accidental =
@@ -108,7 +109,7 @@ module Note = {
 
   let semitonesBetweenNotes = (noteA, noteB) => {
     let delta = (noteB->to_semitones) - (noteA->to_semitones);
-    delta < 0 ? 12 + delta : delta;
+    delta < 0 ? semitones_in_octave + delta : delta;
   };
 }
 
@@ -227,14 +228,14 @@ module Interval = {
 
   let to_cannonical_semitones = interval =>
       switch interval {
-        | Unison => 0
-        | Second(_) => 2
-        | Third(_) => 4
-        | Fourth(_) => 5
-        | Fifth(_) => 7
-        | Sixth(_) => 9
-        | Seventh(_) => 11
-        | Octave => 12
+        | Unison => C(Natural)->to_semitones
+        | Second(_) => D(Natural)->to_semitones
+        | Third(_) => E(Natural)->to_semitones
+        | Fourth(_) => F(Natural)->to_semitones
+        | Fifth(_) => G(Natural)->to_semitones
+        | Sixth(_) => A(Natural)->to_semitones
+        | Seventh(_) => B(Natural)->to_semitones
+        | Octave => semitones_in_octave
       }
 
   let to_semitones = interval => {

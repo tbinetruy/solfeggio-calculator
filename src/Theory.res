@@ -492,7 +492,21 @@ let rec relativeIntervals_of_notes = (notes, acc) => {
   }
 }
 
-let relativeFormula_of_notes = notes => {
-  let relatives = relativeIntervals_of_notes(notes, list{})
-  "root" ++ relatives->List.reduce("", (acc, interval) => acc ++ " -> " ++ interval->Interval.to_string)
+
+let rec absoluteIntervals_of_notes = (notes, acc) => {
+  switch notes {
+    | list{root, next_note, ...rest} =>
+        root
+        ->interval_of_notes(next_note)
+        ->Option.mapWithDefault(list{}, interval => list{interval})
+        ->List.concat(acc)
+        ->List.concat(rest->List.add(root)->absoluteIntervals_of_notes(list{}))
+    | list{_}
+    | list{} => list{}
+  }
+}
+
+
+let string_of_intervals = intervals => {
+  "root" ++ intervals->List.reduce("", (acc, interval) => acc ++ " -> " ++ interval->Interval.to_string)
 }

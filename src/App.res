@@ -160,6 +160,15 @@ let make = () => {
   let scaleTypeSpec =
     [
       MajorScale,
+      NaturalMinorScale,
+      HarmonicMinorScale,
+      IonianMode,
+      DorianMode,
+      PhrygianMode,
+      LydianMode,
+      MixolydianMode,
+      AeolianMode,
+      IocrianMode,
     ]
     ->Array.map(el => Some(el))
     ->Array.concat([None])

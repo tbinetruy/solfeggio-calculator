@@ -333,51 +333,7 @@ module Interval = {
     newNote->setAccidental(accidental)
   };
 
-  module NamedInterval = {
-    type interval =
-      | MinorSecond
-      | MajorSecond
-      | MinorThird
-      | MajorThird
-      | DiminishedFourth
-      | PerfectFourth
-      | AugmentedFourth
-      | DiminishedFifth
-      | PerfectFifth
-      | AugmentedFifth
-      | MinorSixth
-      | MajorSixth
-      | DiminishedSeventh
-      | MinorSeventh
-      | MajorSeventh
-
-    let to_interval = named_interval =>
-      switch named_interval {
-        | MinorSecond => Second(Minor)
-        | MajorSecond => Second(Major)
-        | MinorThird => Third(Minor)
-        | MajorThird => Third(Major)
-        | DiminishedFourth => Fourth(Diminished)
-        | PerfectFourth => Fourth(Perfect)
-        | AugmentedFourth => Fourth(Augmented)
-        | DiminishedFifth => Fifth(Diminished)
-        | PerfectFifth => Fifth(Perfect)
-        | AugmentedFifth => Fifth(Perfect)
-        | MinorSixth => Sixth(Minor)
-        | MajorSixth => Sixth(Major)
-        | DiminishedSeventh => Seventh(Diminished)
-        | MinorSeventh => Seventh(Minor)
-        | MajorSeventh => Seventh(Major)
-      }
-
-    let to_string = named_interval =>
-      named_interval->to_interval->to_string
-  }
-
-  let stackIntervalsRelatively = (root, named_intervals) => {
-    let intervals = named_intervals
-      ->List.map(el => el->NamedInterval.to_interval)
-
+  let stackIntervalsRelatively = (root, intervals) => {
     let rec stackClassIntervalsRelatively = (root, class_intervals) => {
       switch (class_intervals) {
       | list{} => list{root}
@@ -396,9 +352,8 @@ module Interval = {
     stackClassIntervalsRelatively(root, intervals)
   };
 
-  let stackIntervalsAbsolutely = (root, named_intervals) =>
-    named_intervals
-      ->List.map(el => el->NamedInterval.to_interval)
+  let stackIntervalsAbsolutely = (root, intervals) =>
+    intervals
       ->List.reduce(list{root}, (acc, interval) => {
       acc->List.concat(list{note_of_interval(root, interval)})
     });
@@ -415,21 +370,14 @@ open Interval
 
 let buildInterval = (root, named_interval) => {
   switch named_interval {
-    | NamedInterval.MinorSecond => root->stackIntervalsRelatively(list{NamedInterval.MinorSecond})
-    | NamedInterval.MajorSecond => root->stackIntervalsRelatively(list{NamedInterval.MajorSecond})
-    | NamedInterval.MinorThird => root->stackIntervalsRelatively(list{NamedInterval.MinorThird})
-    | NamedInterval.MajorThird => root->stackIntervalsRelatively(list{NamedInterval.MajorThird})
-    | NamedInterval.DiminishedFourth => root->stackIntervalsRelatively(list{NamedInterval.DiminishedFourth})
-    | NamedInterval.PerfectFourth => root->stackIntervalsRelatively(list{NamedInterval.PerfectFourth})
-    | NamedInterval.AugmentedFourth => root->stackIntervalsRelatively(list{NamedInterval.AugmentedFourth})
-    | NamedInterval.DiminishedFifth => root->stackIntervalsRelatively(list{NamedInterval.DiminishedFifth})
-    | NamedInterval.PerfectFifth => root->stackIntervalsRelatively(list{NamedInterval.PerfectFifth})
-    | NamedInterval.AugmentedFifth => root->stackIntervalsRelatively(list{NamedInterval.AugmentedFifth})
-    | NamedInterval.MinorSixth => root->stackIntervalsRelatively(list{NamedInterval.MinorSixth})
-    | NamedInterval.MajorSixth => root->stackIntervalsRelatively(list{NamedInterval.MajorSixth})
-    | NamedInterval.DiminishedSeventh => root->stackIntervalsRelatively(list{NamedInterval.DiminishedSeventh})
-    | NamedInterval.MinorSeventh => root->stackIntervalsRelatively(list{NamedInterval.MinorSeventh})
-    | NamedInterval.MajorSeventh => root->stackIntervalsRelatively(list{NamedInterval.MajorSeventh})
+    | Second(qualifier) => root->stackIntervalsRelatively(list{Second(qualifier)})
+    | Third(qualifier) => root->stackIntervalsRelatively(list{Third(qualifier)})
+    | Fourth(qualifier) => root->stackIntervalsRelatively(list{Fourth(qualifier)})
+    | Fifth(qualifier) => root->stackIntervalsRelatively(list{Fifth(qualifier)})
+    | Sixth(qualifier) => root->stackIntervalsRelatively(list{Sixth(qualifier)})
+    | Seventh(qualifier) => root->stackIntervalsRelatively(list{Seventh(qualifier)})
+    | Unison
+    | Octave => list{root}
   }
 }
 
@@ -481,56 +429,56 @@ let string_of_chord = chord =>
 
 let buildChord = (root, chord) =>
   switch (chord) {
-  | MajorTriad => root->stackIntervalsRelatively(list{MajorThird, MinorThird})
-  | MinorTriad => root->stackIntervalsRelatively(list{MinorThird, MajorThird})
-  | AugmentedTriad => root->stackIntervalsRelatively(list{MajorThird, MajorThird})
+  | MajorTriad => root->stackIntervalsRelatively(list{Major->Third, Minor->Third})
+  | MinorTriad => root->stackIntervalsRelatively(list{Minor->Third, Major->Third})
+  | AugmentedTriad => root->stackIntervalsRelatively(list{Major->Third, Major->Third})
   | DiminishedTriad =>
-    root->stackIntervalsRelatively(list{MinorThird, MinorThird})
+    root->stackIntervalsRelatively(list{Minor->Third, Minor->Third})
   | SuspendedTriad =>
-    root->stackIntervalsRelatively(list{PerfectFourth, MajorSecond})
-  | PowerChord => root->stackIntervalsRelatively(list{PerfectFifth})
-  | AugmentedPowerChord => root->stackIntervalsRelatively(list{AugmentedFifth})
-  | DiminishedPowerChord => root->stackIntervalsRelatively(list{DiminishedFifth})
+    root->stackIntervalsRelatively(list{Perfect->Fourth, Major->Second})
+  | PowerChord => root->stackIntervalsRelatively(list{Perfect->Fifth})
+  | AugmentedPowerChord => root->stackIntervalsRelatively(list{Augmented->Fifth})
+  | DiminishedPowerChord => root->stackIntervalsRelatively(list{Diminished->Fifth})
   | MajorSeventh =>
-    root->stackIntervalsRelatively(list{MajorThird, MinorThird, MajorThird})
+    root->stackIntervalsRelatively(list{Major->Third, Minor->Third, Major->Third})
   | DominanteSeventh =>
-    root->stackIntervalsRelatively(list{MajorThird, MinorThird, MinorThird})
+    root->stackIntervalsRelatively(list{Major->Third, Minor->Third, Minor->Third})
   | MinorSeventhMajor =>
-    root->stackIntervalsRelatively(list{MinorThird, MajorThird, MajorThird})
+    root->stackIntervalsRelatively(list{Minor->Third, Major->Third, Major->Third})
   | MinorSeventh =>
-    root->stackIntervalsRelatively(list{MinorThird, MajorThird, MinorThird})
+    root->stackIntervalsRelatively(list{Minor->Third, Major->Third, Minor->Third})
   | AugmentedMajorSeventh =>
-    root->stackIntervalsRelatively(list{MajorThird, MajorThird, MinorThird})
+    root->stackIntervalsRelatively(list{Major->Third, Major->Third, Minor->Third})
   | HalfDiminishedSeventh =>
     root->stackIntervalsAbsolutely(list{
-      MinorThird,
-      DiminishedFifth,
-      MinorSeventh,
+      Minor->Third,
+      Diminished->Fifth,
+      Minor->Seventh,
     })
   | DiminishedSeventh =>
     root->stackIntervalsAbsolutely(list{
-      MinorThird,
-      DiminishedFifth,
-      DiminishedSeventh,
+      Minor->Third,
+      Diminished->Fifth,
+      Diminished->Seventh,
     })
   | SuspendedSeventh =>
     root->stackIntervalsAbsolutely(list{
-      PerfectFourth,
-      PerfectFifth,
-      MinorSeventh,
+      Perfect->Fourth,
+      Perfect->Fifth,
+      Minor->Seventh,
     })
   | SeventhAugmentedFifth =>
-    root->stackIntervalsAbsolutely(list{MajorThird, AugmentedFifth, MinorSeventh})
+    root->stackIntervalsAbsolutely(list{Major->Third, Augmented->Fifth, Minor->Seventh})
   | SeventhDiminishedFifth =>
     root->stackIntervalsAbsolutely(list{
-      MajorThird,
-      DiminishedFifth,
-      MinorSeventh,
+      Major->Third,
+      Diminished->Fifth,
+      Minor->Seventh,
     })
   | MajorSixth =>
-    root->stackIntervalsAbsolutely(list{MajorThird, PerfectFifth, MajorSixth})
+    root->stackIntervalsAbsolutely(list{Major->Third, Perfect->Fifth, Major->Sixth})
   | MinorSixth =>
-    root->stackIntervalsAbsolutely(list{MinorThird, PerfectFifth, MajorSixth})
+    root->stackIntervalsAbsolutely(list{Minor->Third, Perfect->Fifth, Major->Sixth})
   };
 
 type scale =
@@ -544,13 +492,13 @@ let string_of_scale = scale =>
 let buildScale = (root, scale) =>
   switch (scale) {
   | MajorScale => root->stackIntervalsRelatively(list{
-      MajorSecond,
-      MajorSecond,
-      MinorSecond,
-      MajorSecond,
-      MajorSecond,
-      MajorSecond,
-      MinorSecond,
+      Major->Second,
+      Major->Second,
+      Minor->Second,
+      Major->Second,
+      Major->Second,
+      Major->Second,
+      Minor->Second,
     });
   }
 

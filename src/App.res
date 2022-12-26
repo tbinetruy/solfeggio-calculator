@@ -103,28 +103,29 @@ let make = () => {
            )
       );
 
+  open Interval
   let intervalTypeSpec =
     [
-      Interval.NamedInterval.MinorSecond,
-      Interval.NamedInterval.MajorSecond,
-      Interval.NamedInterval.MinorThird,
-      Interval.NamedInterval.MajorThird,
-      Interval.NamedInterval.DiminishedFourth,
-      Interval.NamedInterval.PerfectFourth,
-      Interval.NamedInterval.AugmentedFourth,
-      Interval.NamedInterval.DiminishedFifth,
-      Interval.NamedInterval.PerfectFifth,
-      Interval.NamedInterval.AugmentedFifth,
-      Interval.NamedInterval.MinorSixth,
-      Interval.NamedInterval.MajorSixth,
-      Interval.NamedInterval.DiminishedSeventh,
-      Interval.NamedInterval.MinorSeventh,
-      Interval.NamedInterval.MajorSeventh,
+      Minor->Second,
+      Major->Second,
+      Minor->Third,
+      Major->Third,
+      Diminished->Fourth,
+      Perfect->Fourth,
+      Augmented->Fourth,
+      Diminished->Fifth,
+      Perfect->Fifth,
+      Augmented->Fifth,
+      Minor->Sixth,
+      Major->Sixth,
+      Diminished->Seventh,
+      Minor->Seventh,
+      Major->Seventh,
     ]
     ->Array.map(el => Some(el))
     ->Array.concat([None])
     ->Array.reduceU(StringMap.empty, (. acc, el) =>
-        acc |> StringMap.add(el->Option.mapWithDefault("None", Interval.NamedInterval.to_string), () => setIntervalType(_ => el))
+        acc |> StringMap.add(el->Option.mapWithDefault("None", Interval.to_string), () => setIntervalType(_ => el))
       );
 
   let chordTypeSpec =
@@ -170,7 +171,7 @@ let make = () => {
     <Select spec=tunningSpec value={tunning->string_of_tunning} />
     <Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} />
     <Select spec=accidentalSpec value={accidental->Accidental.to_string} />
-    <Select spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", Interval.NamedInterval.to_string)} />
+    <Select spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", Interval.to_string)} />
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", string_of_chord)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
     <div> {React.string(notes->string_of_notes)} </div>

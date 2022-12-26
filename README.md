@@ -1,21 +1,5 @@
-# ReScript Project Template
+[[./img/screenshot.png]]
 
-The only official ReScript starter template.
+* Goal
 
-## Installation
-
-```sh
-npm install
-```
-
-## Build
-
-- Build: `npm run res:build`
-- Clean: `npm run res:clean`
-- Build & watch: `npm run res:start`
-
-## Run
-
-```sh
-node src/Demo.bs.js
-```
+Learn solfeggio by coding it :)

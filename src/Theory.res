@@ -214,43 +214,16 @@ module Interval = {
     | Seventh(ThirdQualifier.t)
     | Octave
 
-  let to_cannonical_interval = interval =>
-      switch interval {
-        | Unison => Unison
-        | Second(_) => Second(Major)
-        | Third(_) => Third(Major)
-        | Fourth(_) => Fourth(Perfect)
-        | Fifth(_) => Fifth(Perfect)
-        | Sixth(_) => Sixth(Major)
-        | Seventh(_) => Seventh(Major)
-        | Octave => Octave
-      }
-
-  let to_cannonical_semitones = interval =>
-      switch interval {
-        | Unison => C(Natural)->to_semitones
-        | Second(_) => D(Natural)->to_semitones
-        | Third(_) => E(Natural)->to_semitones
-        | Fourth(_) => F(Natural)->to_semitones
-        | Fifth(_) => G(Natural)->to_semitones
-        | Sixth(_) => A(Natural)->to_semitones
-        | Seventh(_) => B(Natural)->to_semitones
-        | Octave => semitones_in_octave
-      }
-
-  let to_semitones = interval => {
-    let deltaSemitones =
-      switch interval {
-      | Unison => 0
-      | Second(qualifier) => qualifier->ThirdQualifier.to_semitones
-      | Third(qualifier) => qualifier->ThirdQualifier.to_semitones
-      | Fourth(qualifier) => qualifier->FifthQualifier.to_semitones
-      | Fifth(qualifier) => qualifier->FifthQualifier.to_semitones
-      | Sixth(qualifier) => qualifier->ThirdQualifier.to_semitones
-      | Seventh(qualifier) => qualifier->ThirdQualifier.to_semitones
-      | Octave => 0
-    }
-    interval->to_cannonical_semitones + deltaSemitones
+  let to_semitones = interval =>
+    switch interval {
+    | Unison => C(Natural)->to_semitones
+    | Second(qualifier) => D(Natural)->to_semitones + qualifier->ThirdQualifier.to_semitones
+    | Third(qualifier) => E(Natural)->to_semitones + qualifier->ThirdQualifier.to_semitones
+    | Fourth(qualifier) => F(Natural)->to_semitones + qualifier->FifthQualifier.to_semitones
+    | Fifth(qualifier) => G(Natural)->to_semitones + qualifier->FifthQualifier.to_semitones
+    | Sixth(qualifier) => A(Natural)->to_semitones + qualifier->ThirdQualifier.to_semitones
+    | Seventh(qualifier) => B(Natural)->to_semitones + qualifier->ThirdQualifier.to_semitones
+    | Octave => semitones_in_octave
   }
 
   let to_string = interval =>

@@ -292,7 +292,7 @@ module Interval = {
     };
 
   let note_of_interval = (rootNote, interval) => {
-    let newNote= rootNote->note_of_cannonical_interval(interval)->setAccidental(Natural);
+    let newNote = rootNote->note_of_cannonical_interval(interval)->setAccidental(Natural);
     let targetSemitoneDifference = interval->to_semitones;
     let actualSemitoneDifference = semitonesBetweenNotes(rootNote, newNote);
     let accidental =
@@ -328,9 +328,9 @@ module Interval = {
 
   let stackIntervalsAbsolutely = (root, intervals) =>
     intervals
-      ->List.reduce(list{root}, (acc, interval) => {
+    ->List.reduce(list{root}, (acc, interval) =>
       acc->List.concat(list{note_of_interval(root, interval)})
-    });
+    );
 }
 
 let getTonic = notes =>

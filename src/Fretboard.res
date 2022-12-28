@@ -149,7 +149,59 @@ let drawFretboard = (notes, tunning) => {
   ->React.array;
 };
 
+module FretNumbers = {
+  // turns list{1, 3, 5} into list{0, 1, 0, 0, 3, 0, 5}
+  let rec buildNumbers = (numbers, counter, acc) =>
+    switch numbers {
+      | list{head, ...tail} =>
+          if (counter < head) {
+            numbers->buildNumbers(counter + 1, acc->List.add(0))
+          } else {
+            tail->buildNumbers(counter + 1, acc->List.add(head))
+          }
+      | _ => acc->List.reverse
+    }
+
+  @react.component
+  let make = (~numbers) => {
+    let wrapperStyle =
+      ReactDOM.Style.make(
+        ~display="flex",
+        (),
+      );
+
+    let numberStyle =
+      ReactDOM.Style.make(
+        ~display="flex",
+        ~alignItems="center",
+        ~justifyContent="center",
+        ~width="2rem",
+        ~height="2rem",
+        ~borderRight="1px solid white",
+        (),
+      );
+
+
+    let numbersElement =
+      numbers
+      ->buildNumbers(0, list{})
+      ->List.toArray
+      ->Array.map(number => switch number {
+        | 0 => <div style=numberStyle></div>
+        | number => <div style=numberStyle> {React.string(number->Int.toString)} </div>
+      })
+      ->React.array
+
+    <div style=wrapperStyle>
+      { numbersElement }
+    </div>
+  }
+}
+
 @react.component
 let make = (~notes, ~tunning) => {
-  <div> {notes->drawFretboard(tunning->build_tunning)} </div>;
+  <div>
+    <div> {notes->drawFretboard(tunning->build_tunning)} </div>
+    <FretNumbers numbers={list{1, 3, 5, 7, 9, 12}}/>
+  </div>
 };

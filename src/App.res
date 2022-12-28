@@ -1,6 +1,6 @@
 open Theory;
 open Note;
-open Fretboard;
+open Fretboard.Tunning;
 
 module StringMap =
   Map.Make({

@@ -1,9 +1,15 @@
 {
   "name": "rescript-project-template",
-  "sources": {
-    "dir": "src",
-    "subdirs": true
-  },
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    },
+    {
+      "dir": "__tests__",
+      "type": "dev"
+    }
+  ],
   "package-specs": {
     "module": "commonjs",
     "in-source": true
@@ -17,5 +23,5 @@
       "in-source": true
     }
   ],
-  "bs-dependencies": ["@rescript/react", "rescript-webapi"]
+  "bs-dependencies": ["@rescript/react", "rescript-webapi", "@glennsl/rescript-jest"]
 }

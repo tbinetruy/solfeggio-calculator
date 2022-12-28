@@ -1,4 +1,4 @@
-switch ReactDOM.querySelector("body") {
+switch ReactDOM.querySelector("#app") {
   | None => ()
   | Some(body) =>
       let root = ReactDOM.Client.createRoot(body)

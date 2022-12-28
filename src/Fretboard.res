@@ -177,9 +177,12 @@ module FretNumbers = {
       numbers
       ->buildNumbers(0, list{})
       ->List.toArray
-      ->Array.map(number => switch number {
-        | 0 => <div style=numberStyle></div>
-        | number => <div style=numberStyle> {React.string(number->Int.toString)} </div>
+      ->Array.mapWithIndex((i, number) => switch number {
+        | 0 => <div style=numberStyle key={i->string_of_int}></div>
+        | number =>
+          <div style=numberStyle key={i->string_of_int}>
+            {React.string(number->Int.toString)}
+          </div>
       })
       ->React.array
 

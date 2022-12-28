@@ -70,7 +70,6 @@ let drawString = (notes, stringRootNote) => {
       ~width="2rem",
       ~height="2rem",
       ~borderRight="1px solid black",
-      ~borderLeft="1px solid black",
       ~position="relative",
       (),
     );

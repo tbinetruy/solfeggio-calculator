@@ -1,5 +1,4 @@
-open Belt;
-
+open Belt
 
 let semitones_in_octave = 12
 
@@ -9,29 +8,28 @@ module Accidental = {
     | Flat
     | Natural
     | Sharp
-    | DoubleSharp;
+    | DoubleSharp
 
   let to_string = accidental => {
-    switch (accidental) {
+    switch accidental {
     | Flat => "b"
     | DoubleFlat => "bb"
     | Natural => ""
     | DoubleSharp => "##"
     | Sharp => "#"
-    };
-  };
+    }
+  }
 
   let to_semitones = accidental => {
-    switch (accidental) {
+    switch accidental {
     | DoubleFlat => -2
     | Flat => -1
     | Natural => 0
     | Sharp => 1
     | DoubleSharp => 2
-    };
+    }
   }
 }
-
 
 module Note = {
   open Accidental
@@ -43,33 +41,33 @@ module Note = {
     | F(accidental)
     | G(accidental)
     | A(accidental)
-    | B(accidental);
+    | B(accidental)
 
   let setAccidental = (note, accidental) =>
-      switch note {
-        | C(_) => C(accidental)
-        | D(_) => D(accidental)
-        | E(_) => E(accidental)
-        | F(_) => F(accidental)
-        | G(_) => G(accidental)
-        | A(_) => A(accidental)
-        | B(_) => B(accidental)
-      }
+    switch note {
+    | C(_) => C(accidental)
+    | D(_) => D(accidental)
+    | E(_) => E(accidental)
+    | F(_) => F(accidental)
+    | G(_) => G(accidental)
+    | A(_) => A(accidental)
+    | B(_) => B(accidental)
+    }
 
   let is_same_note_familly = (noteA, noteB) =>
-      switch (noteA, noteB) {
-        | (C(_), C(_))
-        | (D(_), D(_))
-        | (E(_), E(_))
-        | (F(_), F(_))
-        | (G(_), G(_))
-        | (A(_), A(_))
-        | (B(_), B(_)) => true
-        | (_, _) => false
-      }
+    switch (noteA, noteB) {
+    | (C(_), C(_))
+    | (D(_), D(_))
+    | (E(_), E(_))
+    | (F(_), F(_))
+    | (G(_), G(_))
+    | (A(_), A(_))
+    | (B(_), B(_)) => true
+    | (_, _) => false
+    }
 
   let to_string = note =>
-    switch (note) {
+    switch note {
     | C(accidental) => "C" ++ accidental->to_string
     | D(accidental) => "D" ++ accidental->to_string
     | E(accidental) => "E" ++ accidental->to_string
@@ -77,7 +75,7 @@ module Note = {
     | G(accidental) => "G" ++ accidental->to_string
     | A(accidental) => "A" ++ accidental->to_string
     | B(accidental) => "B" ++ accidental->to_string
-    };
+    }
 
   let getNextNote = note =>
     switch note {
@@ -88,10 +86,10 @@ module Note = {
     | G(accidental) => A(accidental)
     | A(accidental) => B(accidental)
     | B(accidental) => C(accidental)
-    };
+    }
 
   let to_semitones = note =>
-    switch (note) {
+    switch note {
     | C(accidental) => 0 + accidental->to_semitones
     | D(accidental) => 2 + accidental->to_semitones
     | E(accidental) => 4 + accidental->to_semitones
@@ -99,23 +97,23 @@ module Note = {
     | G(accidental) => 7 + accidental->to_semitones
     | A(accidental) => 9 + accidental->to_semitones
     | B(accidental) => 11 + accidental->to_semitones
-    };
+    }
 
   let rec getNthNote = (rootNote, n) =>
-    switch (n) {
+    switch n {
     | 0 => rootNote
     | _ => getNthNote(rootNote->getNextNote, n - 1)
-    };
+    }
 
   let semitonesBetweenNotes = (noteA, noteB) => {
-    let delta = (noteB->to_semitones) - (noteA->to_semitones);
-    delta < 0 ? semitones_in_octave + delta : delta;
-  };
+    let delta = noteB->to_semitones - noteA->to_semitones
+    delta < 0 ? semitones_in_octave + delta : delta
+  }
 }
 
 open Note
 
-type semitone = int;
+type semitone = int
 
 /*
    for second, third, sixth and seventh:
@@ -150,24 +148,24 @@ module Interval = {
 
     let to_semitones = qualifier =>
       switch qualifier {
-        | Diminished => -1
-        | Perfect => 0
-        | Augmented => 1
+      | Diminished => -1
+      | Perfect => 0
+      | Augmented => 1
       }
 
     let qualifier_of_semitones = semitones =>
       switch semitones {
-        | -1 => Some(Diminished)
-        | 0 => Some(Perfect)
-        | 1 => Some(Augmented)
-        | _ => None
+      | -1 => Some(Diminished)
+      | 0 => Some(Perfect)
+      | 1 => Some(Augmented)
+      | _ => None
       }
 
     let to_string = qualifier =>
       switch qualifier {
-        | Diminished => "diminished"
-        | Perfect => "perfect"
-        | Augmented => "augmented"
+      | Diminished => "diminished"
+      | Perfect => "perfect"
+      | Augmented => "augmented"
       }
   }
 
@@ -180,27 +178,27 @@ module Interval = {
 
     let to_semitones = qualifier =>
       switch qualifier {
-        | Diminished => -2
-        | Minor => -1
-        | Major => 0
-        | Augmented => 1
+      | Diminished => -2
+      | Minor => -1
+      | Major => 0
+      | Augmented => 1
       }
 
     let qualifier_of_semitones = semitones =>
       switch semitones {
-        | -2 => Some(Diminished)
-        | -1 => Some(Minor)
-        | 0 => Some(Major)
-        | 1 => Some(Augmented)
-        | _ => None
+      | -2 => Some(Diminished)
+      | -1 => Some(Minor)
+      | 0 => Some(Major)
+      | 1 => Some(Augmented)
+      | _ => None
       }
 
     let to_string = qualifier =>
       switch qualifier {
-        | Diminished => "diminished"
-        | Minor => "minor"
-        | Major => "major"
-        | Augmented => "augmented"
+      | Diminished => "diminished"
+      | Minor => "minor"
+      | Major => "major"
+      | Augmented => "augmented"
       }
   }
 
@@ -224,31 +222,31 @@ module Interval = {
     | Sixth(qualifier) => A(Natural)->to_semitones + qualifier->ThirdQualifier.to_semitones
     | Seventh(qualifier) => B(Natural)->to_semitones + qualifier->ThirdQualifier.to_semitones
     | Octave => semitones_in_octave
-  }
+    }
 
   let to_string = interval =>
     switch interval {
-      | Unison => "unison"
-      | Second(qualifier) => qualifier->ThirdQualifier.to_string ++ " second"
-      | Third(qualifier) => qualifier->ThirdQualifier.to_string ++ " third"
-      | Fourth(qualifier) => qualifier->FifthQualifier.to_string ++ " fourth"
-      | Fifth(qualifier) => qualifier->FifthQualifier.to_string ++ " fifth"
-      | Sixth(qualifier) => qualifier->ThirdQualifier.to_string ++ " sixth"
-      | Seventh(qualifier) => qualifier->ThirdQualifier.to_string ++ " seventh"
-      | Octave => "octave"
+    | Unison => "unison"
+    | Second(qualifier) => qualifier->ThirdQualifier.to_string ++ " second"
+    | Third(qualifier) => qualifier->ThirdQualifier.to_string ++ " third"
+    | Fourth(qualifier) => qualifier->FifthQualifier.to_string ++ " fourth"
+    | Fifth(qualifier) => qualifier->FifthQualifier.to_string ++ " fifth"
+    | Sixth(qualifier) => qualifier->ThirdQualifier.to_string ++ " sixth"
+    | Seventh(qualifier) => qualifier->ThirdQualifier.to_string ++ " seventh"
+    | Octave => "octave"
     }
 
   let rec intervalNumber_of_notes = (noteA, noteB, distanceAccumulator) =>
-    if (noteA->is_same_note_familly(noteB)) {
-      distanceAccumulator;
+    if noteA->is_same_note_familly(noteB) {
+      distanceAccumulator
     } else {
       let nextNote = noteA->getNextNote
-      intervalNumber_of_notes(nextNote, noteB, distanceAccumulator + 1);
-    };
+      intervalNumber_of_notes(nextNote, noteB, distanceAccumulator + 1)
+    }
 
   let interval_of_notes = (noteA, noteB) => {
-    let deltaSemitones = semitonesBetweenNotes(noteA, noteB);
-    switch (intervalNumber_of_notes(noteA, noteB, 0)) {
+    let deltaSemitones = semitonesBetweenNotes(noteA, noteB)
+    switch intervalNumber_of_notes(noteA, noteB, 0) {
     | 0 => Some(Unison)
     | 1 =>
       (deltaSemitones - Second(Major)->to_semitones)
@@ -276,11 +274,11 @@ module Interval = {
       ->Option.map(qualifier => Seventh(qualifier))
     | 7 => Some(Octave)
     | _ => None
-    };
-  };
+    }
+  }
 
   let note_of_cannonical_interval = (rootNote, interval) =>
-    switch (interval) {
+    switch interval {
     | Unison => rootNote
     | Second(_) => rootNote->getNthNote(1)
     | Third(_) => rootNote->getNthNote(2)
@@ -289,69 +287,70 @@ module Interval = {
     | Sixth(_) => rootNote->getNthNote(5)
     | Seventh(_) => rootNote->getNthNote(6)
     | Octave => rootNote->getNthNote(7)
-    };
+    }
 
   let note_of_interval = (rootNote, interval) => {
-    let newNote = rootNote->note_of_cannonical_interval(interval)->setAccidental(Natural);
-    let targetSemitoneDifference = interval->to_semitones;
-    let actualSemitoneDifference = semitonesBetweenNotes(rootNote, newNote);
-    let accidental =
-      switch (targetSemitoneDifference - actualSemitoneDifference) {
-      | (-2) => Accidental.DoubleFlat
-      | (-1) => Accidental.Flat
-      | 1 => Accidental.Sharp
-      | 2 => Accidental.DoubleSharp
-      | 0
-      | _ => Accidental.Natural
-      };
+    let newNote = rootNote->note_of_cannonical_interval(interval)->setAccidental(Natural)
+    let targetSemitoneDifference = interval->to_semitones
+    let actualSemitoneDifference = semitonesBetweenNotes(rootNote, newNote)
+    let accidental = switch targetSemitoneDifference - actualSemitoneDifference {
+    | -2 => Accidental.DoubleFlat
+    | -1 => Accidental.Flat
+    | 1 => Accidental.Sharp
+    | 2 => Accidental.DoubleSharp
+    | 0
+    | _ =>
+      Accidental.Natural
+    }
     newNote->setAccidental(accidental)
-  };
+  }
 
   let stackIntervalsRelatively = (root, intervals) => {
     let rec stackClassIntervalsRelatively = (root, class_intervals) => {
-      switch (class_intervals) {
+      switch class_intervals {
       | list{} => list{root}
       | list{interval} => list{root, note_of_interval(root, interval)}
       | list{interval, ...rest} =>
-        let nextNote = note_of_interval(root, interval);
-        let subChord =
-          switch (stackClassIntervalsRelatively(nextNote, rest)) {
-          | list{}
-          | list{_} => list{}
-          | list{_, ...rest} => rest
-          };
-        list{root, nextNote}->List.concat(subChord);
-      };
+        let nextNote = note_of_interval(root, interval)
+        let subChord = switch stackClassIntervalsRelatively(nextNote, rest) {
+        | list{}
+        | list{_} =>
+          list{}
+        | list{_, ...rest} => rest
+        }
+        list{root, nextNote}->List.concat(subChord)
+      }
     }
     stackClassIntervalsRelatively(root, intervals)
-  };
+  }
 
   let stackIntervalsAbsolutely = (root, intervals) =>
-    intervals
-    ->List.reduce(list{root}, (acc, interval) =>
+    intervals->List.reduce(list{root}, (acc, interval) =>
       acc->List.concat(list{note_of_interval(root, interval)})
-    );
+    )
 }
 
 let getTonic = notes =>
-  switch (notes) {
+  switch notes {
   | list{} => None
   | list{head}
-  | list{head, ..._} => Some(head)
-  };
+  | list{head, ..._} =>
+    Some(head)
+  }
 
 open Interval
 
 let buildInterval = (root, named_interval) => {
   switch named_interval {
-    | Second(qualifier) => root->stackIntervalsRelatively(list{Second(qualifier)})
-    | Third(qualifier) => root->stackIntervalsRelatively(list{Third(qualifier)})
-    | Fourth(qualifier) => root->stackIntervalsRelatively(list{Fourth(qualifier)})
-    | Fifth(qualifier) => root->stackIntervalsRelatively(list{Fifth(qualifier)})
-    | Sixth(qualifier) => root->stackIntervalsRelatively(list{Sixth(qualifier)})
-    | Seventh(qualifier) => root->stackIntervalsRelatively(list{Seventh(qualifier)})
-    | Unison
-    | Octave => list{root}
+  | Second(qualifier) => root->stackIntervalsRelatively(list{Second(qualifier)})
+  | Third(qualifier) => root->stackIntervalsRelatively(list{Third(qualifier)})
+  | Fourth(qualifier) => root->stackIntervalsRelatively(list{Fourth(qualifier)})
+  | Fifth(qualifier) => root->stackIntervalsRelatively(list{Fifth(qualifier)})
+  | Sixth(qualifier) => root->stackIntervalsRelatively(list{Sixth(qualifier)})
+  | Seventh(qualifier) => root->stackIntervalsRelatively(list{Seventh(qualifier)})
+  | Unison
+  | Octave =>
+    list{root}
   }
 }
 
@@ -375,10 +374,10 @@ type chord =
   | SeventhAugmentedFifth
   | SeventhDiminishedFifth
   | MajorSixth
-  | MinorSixth;
+  | MinorSixth
 
 let string_of_chord = chord =>
-  switch (chord) {
+  switch chord {
   | MajorTriad => "majorTriad"
   | MinorTriad => "minorTriad"
   | AugmentedTriad => "augmentedTriad"
@@ -399,61 +398,39 @@ let string_of_chord = chord =>
   | SeventhDiminishedFifth => "seventhDiminishedFifth"
   | MajorSixth => "majorSixth"
   | MinorSixth => "minorSixth"
-  };
+  }
 
 let buildChord = (root, chord) =>
-  switch (chord) {
+  switch chord {
   | MajorTriad => root->stackIntervalsRelatively(list{Major->Third, Minor->Third})
   | MinorTriad => root->stackIntervalsRelatively(list{Minor->Third, Major->Third})
   | AugmentedTriad => root->stackIntervalsRelatively(list{Major->Third, Major->Third})
-  | DiminishedTriad =>
-    root->stackIntervalsRelatively(list{Minor->Third, Minor->Third})
-  | SuspendedTriad =>
-    root->stackIntervalsRelatively(list{Perfect->Fourth, Major->Second})
+  | DiminishedTriad => root->stackIntervalsRelatively(list{Minor->Third, Minor->Third})
+  | SuspendedTriad => root->stackIntervalsRelatively(list{Perfect->Fourth, Major->Second})
   | PowerChord => root->stackIntervalsRelatively(list{Perfect->Fifth})
   | AugmentedPowerChord => root->stackIntervalsRelatively(list{Augmented->Fifth})
   | DiminishedPowerChord => root->stackIntervalsRelatively(list{Diminished->Fifth})
-  | MajorSeventh =>
-    root->stackIntervalsRelatively(list{Major->Third, Minor->Third, Major->Third})
+  | MajorSeventh => root->stackIntervalsRelatively(list{Major->Third, Minor->Third, Major->Third})
   | DominanteSeventh =>
     root->stackIntervalsRelatively(list{Major->Third, Minor->Third, Minor->Third})
   | MinorSeventhMajor =>
     root->stackIntervalsRelatively(list{Minor->Third, Major->Third, Major->Third})
-  | MinorSeventh =>
-    root->stackIntervalsRelatively(list{Minor->Third, Major->Third, Minor->Third})
+  | MinorSeventh => root->stackIntervalsRelatively(list{Minor->Third, Major->Third, Minor->Third})
   | AugmentedMajorSeventh =>
     root->stackIntervalsRelatively(list{Major->Third, Major->Third, Minor->Third})
   | HalfDiminishedSeventh =>
-    root->stackIntervalsAbsolutely(list{
-      Minor->Third,
-      Diminished->Fifth,
-      Minor->Seventh,
-    })
+    root->stackIntervalsAbsolutely(list{Minor->Third, Diminished->Fifth, Minor->Seventh})
   | DiminishedSeventh =>
-    root->stackIntervalsAbsolutely(list{
-      Minor->Third,
-      Diminished->Fifth,
-      Diminished->Seventh,
-    })
+    root->stackIntervalsAbsolutely(list{Minor->Third, Diminished->Fifth, Diminished->Seventh})
   | SuspendedSeventh =>
-    root->stackIntervalsAbsolutely(list{
-      Perfect->Fourth,
-      Perfect->Fifth,
-      Minor->Seventh,
-    })
+    root->stackIntervalsAbsolutely(list{Perfect->Fourth, Perfect->Fifth, Minor->Seventh})
   | SeventhAugmentedFifth =>
     root->stackIntervalsAbsolutely(list{Major->Third, Augmented->Fifth, Minor->Seventh})
   | SeventhDiminishedFifth =>
-    root->stackIntervalsAbsolutely(list{
-      Major->Third,
-      Diminished->Fifth,
-      Minor->Seventh,
-    })
-  | MajorSixth =>
-    root->stackIntervalsAbsolutely(list{Major->Third, Perfect->Fifth, Major->Sixth})
-  | MinorSixth =>
-    root->stackIntervalsAbsolutely(list{Minor->Third, Perfect->Fifth, Major->Sixth})
-  };
+    root->stackIntervalsAbsolutely(list{Major->Third, Diminished->Fifth, Minor->Seventh})
+  | MajorSixth => root->stackIntervalsAbsolutely(list{Major->Third, Perfect->Fifth, Major->Sixth})
+  | MinorSixth => root->stackIntervalsAbsolutely(list{Minor->Third, Perfect->Fifth, Major->Sixth})
+  }
 
 type scale =
   | MajorScale
@@ -468,27 +445,27 @@ type scale =
   | IocrianMode
 
 let string_of_scale = scale =>
-  switch (scale) {
-    | MajorScale => "Major Scale"
-    | NaturalMinorScale => "Natural Minor"
-    | HarmonicMinorScale => "Harmonic Minor"
-    | IonianMode => "Ionial Mode"
-    | DorianMode => "Dorian Mode"
-    | PhrygianMode => "Phrygian Mode"
-    | LydianMode => "Lydian Mode"
-    | MixolydianMode => "Mixolydian Mode"
-    | AeolianMode => "Aeolian Mode"
-    | IocrianMode => "Iocrian Mode"
+  switch scale {
+  | MajorScale => "Major Scale"
+  | NaturalMinorScale => "Natural Minor"
+  | HarmonicMinorScale => "Harmonic Minor"
+  | IonianMode => "Ionial Mode"
+  | DorianMode => "Dorian Mode"
+  | PhrygianMode => "Phrygian Mode"
+  | LydianMode => "Lydian Mode"
+  | MixolydianMode => "Mixolydian Mode"
+  | AeolianMode => "Aeolian Mode"
+  | IocrianMode => "Iocrian Mode"
   }
 
 let rec get_nth_mode = (intervals, n) => {
   switch n {
-    | 0 => intervals
-    | _ =>
-      switch intervals {
-        | list{} => list{}
-        | list{head, ...tail} => get_nth_mode(tail->List.concat(list{head}), n - 1)
-      }
+  | 0 => intervals
+  | _ =>
+    switch intervals {
+    | list{} => list{}
+    | list{head, ...tail} => get_nth_mode(tail->List.concat(list{head}), n - 1)
+    }
   }
 }
 
@@ -503,8 +480,8 @@ let major_mode_scale_intervals = list{
 }
 
 let buildScale = (root, scale) =>
-  switch (scale) {
-  | MajorScale => root->stackIntervalsRelatively(major_mode_scale_intervals);
+  switch scale {
+  | MajorScale => root->stackIntervalsRelatively(major_mode_scale_intervals)
   | IonianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(0))
   | DorianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(1))
   | PhrygianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(2))
@@ -512,57 +489,59 @@ let buildScale = (root, scale) =>
   | MixolydianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(4))
   | AeolianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(5))
   | IocrianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(6))
-  | NaturalMinorScale => root->stackIntervalsRelatively(list{
-    Major->Second,
-    Minor->Second,
-    Major->Second,
-    Major->Second,
-    Minor->Second,
-    Major->Second,
-    Major->Second,
-  })
-  | HarmonicMinorScale => root->stackIntervalsRelatively(list{
-    Major->Second,
-    Minor->Second,
-    Major->Second,
-    Major->Second,
-    Minor->Second,
-    Augmented->Second,
-    Minor->Second,
-  })
+  | NaturalMinorScale =>
+    root->stackIntervalsRelatively(list{
+      Major->Second,
+      Minor->Second,
+      Major->Second,
+      Major->Second,
+      Minor->Second,
+      Major->Second,
+      Major->Second,
+    })
+  | HarmonicMinorScale =>
+    root->stackIntervalsRelatively(list{
+      Major->Second,
+      Minor->Second,
+      Major->Second,
+      Major->Second,
+      Minor->Second,
+      Augmented->Second,
+      Minor->Second,
+    })
   }
 
-let string_of_notes = notes =>
-  notes->List.reduce("", (acc, note) => acc ++ (note->Note.to_string));
+let string_of_notes = notes => notes->List.reduce("", (acc, note) => acc ++ note->Note.to_string)
 
 let rec relativeIntervals_of_notes = (notes, acc) => {
   switch notes {
-    | list{root, next_note, ...rest} =>
-        root
-        ->interval_of_notes(next_note)
-        ->Option.mapWithDefault(list{}, interval => list{interval})
-        ->List.concat(acc)
-        ->List.concat(rest->List.add(next_note)->relativeIntervals_of_notes(list{}))
-    | list{_}
-    | list{} => list{}
+  | list{root, next_note, ...rest} =>
+    root
+    ->interval_of_notes(next_note)
+    ->Option.mapWithDefault(list{}, interval => list{interval})
+    ->List.concat(acc)
+    ->List.concat(rest->List.add(next_note)->relativeIntervals_of_notes(list{}))
+  | list{_}
+  | list{} =>
+    list{}
   }
 }
-
 
 let rec absoluteIntervals_of_notes = (notes, acc) => {
   switch notes {
-    | list{root, next_note, ...rest} =>
-        root
-        ->interval_of_notes(next_note)
-        ->Option.mapWithDefault(list{}, interval => list{interval})
-        ->List.concat(acc)
-        ->List.concat(rest->List.add(root)->absoluteIntervals_of_notes(list{}))
-    | list{_}
-    | list{} => list{}
+  | list{root, next_note, ...rest} =>
+    root
+    ->interval_of_notes(next_note)
+    ->Option.mapWithDefault(list{}, interval => list{interval})
+    ->List.concat(acc)
+    ->List.concat(rest->List.add(root)->absoluteIntervals_of_notes(list{}))
+  | list{_}
+  | list{} =>
+    list{}
   }
 }
 
-
 let string_of_intervals = intervals => {
-  "root" ++ intervals->List.reduce("", (acc, interval) => acc ++ " -> " ++ interval->Interval.to_string)
+  "root" ++
+  intervals->List.reduce("", (acc, interval) => acc ++ " -> " ++ interval->Interval.to_string)
 }

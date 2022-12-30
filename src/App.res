@@ -102,6 +102,7 @@ let make = () => {
     [
       Minor->Second,
       Major->Second,
+      Diminished->Third,
       Minor->Third,
       Major->Third,
       Diminished->Fourth,

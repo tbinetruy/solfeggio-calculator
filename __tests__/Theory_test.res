@@ -118,7 +118,7 @@ describe("harmonize scale", () => {
     ->toEqual(expected)
   })
 
-  test("harmonize scale with triads", () => {
+  test("harmonize C major scale with triads", () => {
     let scale = C(Natural)->buildScale(MajorScale)
     let scale_harmonization = scale->harmonize_scale_with_triads
 
@@ -137,7 +137,7 @@ describe("harmonize scale", () => {
     ->toEqual(expected)
   })
 
-  test("harmonize scale with tetrads", () => {
+  test("harmonize C major scale with tetrads", () => {
     let scale = C(Natural)->buildScale(MajorScale)
     let scale_harmonization = scale->harmonize_scale_with_tetrades
 

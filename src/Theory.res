@@ -579,6 +579,7 @@ let chord_of_relativeIntervals = intervals =>
   | list{Third(Major), Third(Minor), Third(Major)} => Result.Ok(MajorSeventh)
   | list{Third(Minor), Third(Minor), Third(Major)} => Result.Ok(HalfDiminishedSeventh)
   | list{Third(Major), Third(Minor), Third(Minor)} => Result.Ok(DominanteSeventh)
+  | list{Third(Minor), Third(Minor), Third(Minor)} => Result.Ok(DiminishedSeventh)
   | _ =>
     Result.Error(
       "Could not find the matching chord for intervals" ++

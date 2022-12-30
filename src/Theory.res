@@ -535,7 +535,7 @@ let buildScale = (root, scale) =>
   | HarmonicMinorScale => root->stackIntervalsRelatively(scale->relativeIntervals_of_scale)
   }
 
-let string_of_notes = notes => notes->List.reduce("", (acc, note) => acc ++ note->Note.to_string)
+let string_of_notes = notes => notes->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " > ")->Js.String2.slice(~from=0, ~to_=-3)
 
 let rec relativeIntervals_of_notes = (notes, acc) => {
   switch notes {

@@ -479,18 +479,27 @@ let major_mode_scale_intervals = list{
   Minor->Second,
 }
 
-let buildScale = (root, scale) =>
+let rec relativeIntervals_of_scale = scale =>
   switch scale {
-  | MajorScale => root->stackIntervalsRelatively(major_mode_scale_intervals)
-  | IonianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(0))
-  | DorianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(1))
-  | PhrygianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(2))
-  | LydianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(3))
-  | MixolydianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(4))
-  | AeolianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(5))
-  | IocrianMode => root->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(6))
+  | MajorScale =>
+    list{
+      Major->Second,
+      Major->Second,
+      Minor->Second,
+      Major->Second,
+      Major->Second,
+      Major->Second,
+      Minor->Second,
+    }
+  | IonianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(0)
+  | DorianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(1)
+  | PhrygianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(2)
+  | LydianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(3)
+  | MixolydianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(4)
+  | AeolianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(5)
+  | IocrianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(6)
   | NaturalMinorScale =>
-    root->stackIntervalsRelatively(list{
+    list{
       Major->Second,
       Minor->Second,
       Major->Second,
@@ -498,9 +507,9 @@ let buildScale = (root, scale) =>
       Minor->Second,
       Major->Second,
       Major->Second,
-    })
+    }
   | HarmonicMinorScale =>
-    root->stackIntervalsRelatively(list{
+    list{
       Major->Second,
       Minor->Second,
       Major->Second,
@@ -508,7 +517,22 @@ let buildScale = (root, scale) =>
       Minor->Second,
       Augmented->Second,
       Minor->Second,
-    })
+    }
+  }
+
+
+let buildScale = (root, scale) =>
+  switch scale {
+  | MajorScale
+  | IonianMode
+  | DorianMode
+  | PhrygianMode
+  | LydianMode
+  | MixolydianMode
+  | AeolianMode
+  | IocrianMode
+  | NaturalMinorScale
+  | HarmonicMinorScale => root->stackIntervalsRelatively(scale->relativeIntervals_of_scale)
   }
 
 let string_of_notes = notes => notes->List.reduce("", (acc, note) => acc ++ note->Note.to_string)

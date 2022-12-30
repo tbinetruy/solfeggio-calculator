@@ -545,3 +545,58 @@ let string_of_intervals = intervals => {
   "root" ++
   intervals->List.reduce("", (acc, interval) => acc ++ " -> " ++ interval->Interval.to_string)
 }
+
+let chord_of_relativeIntervals = intervals =>
+  switch intervals {
+  | list{Third(Minor), Third(Major)} => Result.Ok(MinorTriad)
+  | list{Third(Major), Third(Minor)} => Result.Ok(MajorTriad)
+  | list{Third(Minor), Third(Minor)} => Result.Ok(DiminishedTriad)
+  | _ => Result.Error("Could not map intervals to chords")
+  }
+
+let rec transpose = l =>
+  switch l {
+  | list{} => list{}
+  | list{list{}, ...xss} => transpose(xss)
+  | list{list{x, ...xs}, ...xss} =>
+    let head = list{x, ...xss->List.map(List.headExn)}
+    let tail = transpose(list{xs, ...xss->List.map(List.tailExn)})
+    list{head, ...tail}
+  }
+
+// see https://www.bluesguitarinstitute.com/how-to-harmonize-a-scale/
+let get_harmonization_matrix = scale =>
+  scale->List.mapWithIndex((i, note) =>
+    note->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(i))
+  )
+
+let print_matrix = matrix => {
+  let string_of_row = row => row->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " ")
+
+  matrix->List.reduce("", (acc, row) => acc ++ row->string_of_row ++ "\n")
+}
+
+let harmonize_scale = (scale, spec) => {
+  scale
+  ->get_harmonization_matrix
+  ->transpose
+  ->List.reduce(Result.Ok(list{}), (acc, row) => {
+    let notes = row->List.reduceWithIndex(list{}, (acc, note, i) => {
+      switch spec->Set.Int.has(i) {
+        | true => acc->List.concat(list{note})
+        | false => acc
+      }
+    })
+    let intervals = notes->relativeIntervals_of_notes(list{})
+
+    let result = intervals->chord_of_relativeIntervals
+    switch result {
+    | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
+    | Result.Error(_) => Result.Error("Could not find the matching chord for " ++ notes->string_of_notes)
+    }
+  })
+  ->Result.map(List.reverse)
+}
+
+let harmonize_scale_with_triads = scale =>
+    scale->harmonize_scale([0, 2, 4]->Set.Int.fromArray)

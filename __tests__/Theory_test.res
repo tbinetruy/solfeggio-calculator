@@ -4,6 +4,42 @@ open Theory.Note
 open Jest
 open Belt
 
+describe("relative_intervals_of_notes", () => {
+  open Expect;
+
+  test("major triad", () =>
+    expect(list{C(Natural), E(Natural), G(Natural)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Major->Third, Minor->Third}))
+
+  test("minor triad", () =>
+    expect(list{C(Natural), E(Flat), G(Natural)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Minor->Third, Major->Third}))
+
+  test("diminished triad", () =>
+    expect(list{C(Natural), E(Flat), G(Flat)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Minor->Third, Minor->Third}))
+
+  test("major seventh", () =>
+    expect(list{C(Natural), E(Natural), G(Natural), B(Natural)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Major->Third, Minor->Third, Major->Third}))
+
+  test("minor seventh", () =>
+    expect(list{C(Natural), E(Flat), G(Natural), B(Flat)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Minor->Third, Major->Third, Minor->Third}))
+
+  test("dominant seventh", () =>
+    expect(list{C(Natural), E(Natural), G(Natural), B(Flat)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Major->Third, Minor->Third, Minor->Third}))
+
+  test("diminished interval", () =>
+    expect(list{E(Flat), G(DoubleFlat)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Diminished->Third}))
+
+  test("half diminished seventh", () =>
+    expect(list{C(Natural), E(Flat), G(Flat), B(Flat)}->relativeIntervals_of_notes(list{}))
+    ->toEqual(list{Minor->Third, Minor->Third, Major->Third}))
+})
+
 describe("chord_of_intervals", () => {
   open Expect;
 

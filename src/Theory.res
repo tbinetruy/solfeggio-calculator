@@ -555,7 +555,14 @@ let chord_of_relativeIntervals = intervals =>
   | list{Third(Major), Third(Minor), Third(Major)} => Result.Ok(MajorSeventh)
   | list{Third(Minor), Third(Minor), Third(Major)} => Result.Ok(HalfDiminishedSeventh)
   | list{Third(Major), Third(Minor), Third(Minor)} => Result.Ok(DominanteSeventh)
-  | _ => Result.Error("Could not map intervals to chords")
+  | _ =>
+    Result.Error(
+      "Could not find the matching chord for intervals" ++
+      ": " ++
+      intervals
+      ->List.reduce("", (acc, interval) => acc ++ interval->Interval.to_string ++ " > ")
+      ->Js.String2.slice(~from=0, ~to_=-3),
+    )
   }
 
 let rec transpose = l =>
@@ -598,13 +605,8 @@ let harmonize_scale = (scale, spec) => {
 
     switch intervals->chord_of_relativeIntervals {
     | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
-    | Result.Error(_) => Result.Error(
-        "Could not find the matching chord for "
-        ++ chord_notes->string_of_notes
-        ++ ": "
-        ++ intervals->List.reduce("", (acc, interval) => acc ++ interval->Interval.to_string ++ " > ")
-        ->Js.String2.slice(~from=0, ~to_=-3)
-      )
+    | Result.Error(msg) =>
+      Result.Error(msg ++ " (" ++ chord_notes->string_of_notes ++ ")")
     }
   })
   ->Result.map(List.reverse)

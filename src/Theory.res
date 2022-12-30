@@ -588,32 +588,29 @@ let print_matrix = matrix => {
 }
 
 let filter_notes = (notes, spec) =>
-    notes->List.reduceWithIndex(list{}, (acc, note, i) => {
-      switch spec->Set.Int.has(i) {
-        | true => acc->List.concat(list{note})
-        | false => acc
-      }
-    })
+  notes->List.reduceWithIndex(list{}, (acc, note, i) => {
+    switch spec->Set.Int.has(i) {
+    | true => acc->List.concat(list{note})
+    | false => acc
+    }
+  })
 
 let harmonize_scale = (scale, spec) => {
   scale
   ->get_harmonization_matrix
   ->transpose
   ->List.reduce(Result.Ok(list{}), (acc, row) => {
-    let chord_notes =  row->filter_notes(spec)
+    let chord_notes = row->filter_notes(spec)
     let intervals = chord_notes->relativeIntervals_of_notes(list{})
 
     switch intervals->chord_of_relativeIntervals {
     | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
-    | Result.Error(msg) =>
-      Result.Error(msg ++ " (" ++ chord_notes->string_of_notes ++ ")")
+    | Result.Error(msg) => Result.Error(msg ++ " (" ++ chord_notes->string_of_notes ++ ")")
     }
   })
   ->Result.map(List.reverse)
 }
 
-let harmonize_scale_with_triads = scale =>
-    scale->harmonize_scale([0, 2, 4]->Set.Int.fromArray)
+let harmonize_scale_with_triads = scale => scale->harmonize_scale([0, 2, 4]->Set.Int.fromArray)
 
-let harmonize_scale_with_tetrades = scale =>
-    scale->harmonize_scale([0, 2, 4, 6]->Set.Int.fromArray)
+let harmonize_scale_with_tetrades = scale => scale->harmonize_scale([0, 2, 4, 6]->Set.Int.fromArray)

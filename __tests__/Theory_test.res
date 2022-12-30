@@ -18,6 +18,22 @@ describe("chord_of_intervals", () => {
   test("diminished triad", () =>
     expect(list{Minor->Third, Minor->Third}->chord_of_relativeIntervals)
     ->toEqual(Result.Ok(DiminishedTriad)))
+
+  test("minor seventh", () =>
+    expect(list{Minor->Third, Major->Third, Minor->Third}->chord_of_relativeIntervals)
+    ->toEqual(Result.Ok(MinorSeventh)))
+
+  test("major seventh", () =>
+    expect(list{Major->Third, Minor->Third, Major->Third}->chord_of_relativeIntervals)
+    ->toEqual(Result.Ok(MajorSeventh)))
+
+  test("half diminished seventh", () =>
+    expect(list{Minor->Third, Minor->Third, Major->Third}->chord_of_relativeIntervals)
+    ->toEqual(Result.Ok(HalfDiminishedSeventh)))
+
+  test("dominant seventh", () =>
+    expect(list{Major->Third, Minor->Third, Minor->Third}->chord_of_relativeIntervals)
+    ->toEqual(Result.Ok(DominanteSeventh)))
 });
 
 
@@ -66,7 +82,7 @@ describe("harmonize scale", () => {
     ->toEqual(expected)
   })
 
-  test("harmonize scale", () => {
+  test("harmonize scale with triads", () => {
     let scale = C(Natural)->buildScale(MajorScale)
     let scale_harmonization = scale->harmonize_scale_with_triads
 
@@ -79,6 +95,25 @@ describe("harmonize scale", () => {
       MinorTriad,
       DiminishedTriad,
       MajorTriad,
+    }->Result.Ok
+
+    expect(scale_harmonization)
+    ->toEqual(expected)
+  })
+
+  test("harmonize scale with tetrads", () => {
+    let scale = C(Natural)->buildScale(MajorScale)
+    let scale_harmonization = scale->harmonize_scale_with_tetrades
+
+    let expected = list{
+      MajorSeventh,
+      MinorSeventh,
+      MinorSeventh,
+      MajorSeventh,
+      DominanteSeventh,
+      MinorSeventh,
+      HalfDiminishedSeventh,
+      MajorSeventh,
     }->Result.Ok
 
     expect(scale_harmonization)

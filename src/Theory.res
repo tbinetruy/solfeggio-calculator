@@ -551,6 +551,10 @@ let chord_of_relativeIntervals = intervals =>
   | list{Third(Minor), Third(Major)} => Result.Ok(MinorTriad)
   | list{Third(Major), Third(Minor)} => Result.Ok(MajorTriad)
   | list{Third(Minor), Third(Minor)} => Result.Ok(DiminishedTriad)
+  | list{Third(Minor), Third(Major), Third(Minor)} => Result.Ok(MinorSeventh)
+  | list{Third(Major), Third(Minor), Third(Major)} => Result.Ok(MajorSeventh)
+  | list{Third(Minor), Third(Minor), Third(Major)} => Result.Ok(HalfDiminishedSeventh)
+  | list{Third(Major), Third(Minor), Third(Minor)} => Result.Ok(DominanteSeventh)
   | _ => Result.Error("Could not map intervals to chords")
   }
 
@@ -608,3 +612,6 @@ let harmonize_scale = (scale, spec) => {
 
 let harmonize_scale_with_triads = scale =>
     scale->harmonize_scale([0, 2, 4]->Set.Int.fromArray)
+
+let harmonize_scale_with_tetrades = scale =>
+    scale->harmonize_scale([0, 2, 4, 6]->Set.Int.fromArray)

@@ -579,18 +579,7 @@ let rec relativeIntervals_of_scale = scale =>
 
 
 let buildScale = (root, scale) =>
-  switch scale {
-  | MajorScale
-  | IonianMode
-  | DorianMode
-  | PhrygianMode
-  | LydianMode
-  | MixolydianMode
-  | AeolianMode
-  | IocrianMode
-  | NaturalMinorScale
-  | HarmonicMinorScale => root->stackIntervalsRelatively(scale->relativeIntervals_of_scale)
-  }
+  root->stackIntervalsRelatively(scale->relativeIntervals_of_scale)
 
 let string_of_notes = notes => notes->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " > ")->Js.String2.slice(~from=0, ~to_=-3)
 

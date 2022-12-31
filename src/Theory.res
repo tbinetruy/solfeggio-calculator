@@ -469,16 +469,6 @@ let rec get_nth_mode = (intervals, n) => {
   }
 }
 
-let major_mode_scale_intervals = list{
-  Major->Second,
-  Major->Second,
-  Minor->Second,
-  Major->Second,
-  Major->Second,
-  Major->Second,
-  Minor->Second,
-}
-
 let rec relativeIntervals_of_scale = scale =>
   switch scale {
   | MajorScale =>
@@ -603,7 +593,7 @@ let rec transpose = l =>
 // see https://www.bluesguitarinstitute.com/how-to-harmonize-a-scale/
 let get_harmonization_matrix = scale =>
   scale->List.mapWithIndex((i, note) =>
-    note->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(i))
+    note->stackIntervalsRelatively(MajorScale->relativeIntervals_of_scale->get_nth_mode(i))
   )
 
 let print_matrix = matrix => {

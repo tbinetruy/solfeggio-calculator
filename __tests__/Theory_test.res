@@ -112,7 +112,7 @@ describe("harmonize scale", () => {
 
   test("harmonization_matrix", () => {
     let harmonization_matrix = C(Natural)->buildScale(MajorScale)->get_harmonization_matrix
-    let expected = G(Natural)->stackIntervalsRelatively(major_mode_scale_intervals->get_nth_mode(4))
+    let expected = G(Natural)->stackIntervalsRelatively(MajorScale->relativeIntervals_of_scale->get_nth_mode(4))
 
     expect(harmonization_matrix->List.getExn(4))
     ->toEqual(expected)

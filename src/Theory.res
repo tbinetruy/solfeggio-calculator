@@ -224,6 +224,59 @@ module Interval = {
     | Octave => semitones_in_octave
     }
 
+  let nNotes_of_interval = interval =>
+    switch interval {
+    | Unison => 1
+    | Second(_) => 2
+    | Third(_) => 3
+    | Fourth(_) => 4
+    | Fifth(_) => 5
+    | Sixth(_) => 6
+    | Seventh(_) => 7
+    | Octave => 8
+    }
+
+  let interval_of_semitones = (nNotes, nSemitones) =>
+      switch nNotes {
+      | 1 =>
+        if nSemitones == 0 {
+          Some(Unison)
+        } else {
+          None
+        }
+      | 2 =>
+        let qualifier = (nSemitones - Major->Second->to_semitones)->ThirdQualifier.qualifier_of_semitones
+        qualifier->Option.map(qualifier => Second(qualifier))
+      | 3 =>
+        let qualifier = (nSemitones - Major->Third->to_semitones)->ThirdQualifier.qualifier_of_semitones
+        qualifier->Option.map(qualifier => Third(qualifier))
+      | 4 =>
+        let qualifier = (nSemitones - Perfect->Fourth->to_semitones)->FifthQualifier.qualifier_of_semitones
+        qualifier->Option.map(qualifier => Fourth(qualifier))
+      | 5 =>
+        let qualifier = (nSemitones - Perfect->Fifth->to_semitones)->FifthQualifier.qualifier_of_semitones
+        qualifier->Option.map(qualifier => Fifth(qualifier))
+      | 6 =>
+        let qualifier = (nSemitones - Major->Sixth->to_semitones)->ThirdQualifier.qualifier_of_semitones
+        qualifier->Option.map(qualifier => Sixth(qualifier))
+      | 7 =>
+        let qualifier = (nSemitones - Major->Seventh->to_semitones)->ThirdQualifier.qualifier_of_semitones
+        qualifier->Option.map(qualifier => Seventh(qualifier))
+      | 8 =>
+        if nSemitones == 12 {
+          Some(Octave)
+        } else {
+          None
+        }
+      | _ => None
+      }
+
+  let addIntervals = (intervalA, intervalB) => {
+    let nNotes = intervalA->nNotes_of_interval + intervalB->nNotes_of_interval - 1
+    let nSemitones = intervalA->to_semitones + intervalB->to_semitones
+    interval_of_semitones(nNotes, nSemitones)
+  }
+
   let to_string = interval =>
     switch interval {
     | Unison => "unison"

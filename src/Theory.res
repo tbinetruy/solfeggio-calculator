@@ -251,39 +251,45 @@ module Interval = {
     }
 
   let interval_of_semitones = (nNotes, nSemitones) =>
-      switch nNotes {
-      | 1 =>
-        if nSemitones == 0 {
-          Result.Ok(Unison)
-        } else {
-          Errors.unison_semitones
-        }
-      | 2 =>
-        let qualifier = (nSemitones - Major->Second->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Result.map(qualifier => Second(qualifier))
-      | 3 =>
-        let qualifier = (nSemitones - Major->Third->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Result.map(qualifier => Third(qualifier))
-      | 4 =>
-        let qualifier = (nSemitones - Perfect->Fourth->to_semitones)->FifthQualifier.qualifier_of_semitones
-        qualifier->Result.map(qualifier => Fourth(qualifier))
-      | 5 =>
-        let qualifier = (nSemitones - Perfect->Fifth->to_semitones)->FifthQualifier.qualifier_of_semitones
-        qualifier->Result.map(qualifier => Fifth(qualifier))
-      | 6 =>
-        let qualifier = (nSemitones - Major->Sixth->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Result.map(qualifier => Sixth(qualifier))
-      | 7 =>
-        let qualifier = (nSemitones - Major->Seventh->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Result.map(qualifier => Seventh(qualifier))
-      | 8 =>
-        if nSemitones == 12 {
-          Result.Ok(Octave)
-        } else {
-          Errors.octave_semitones
-        }
-      | _ => Errors.nNotes_too_large
+    switch nNotes {
+    | 1 =>
+      if nSemitones == 0 {
+        Result.Ok(Unison)
+      } else {
+        Errors.unison_semitones
       }
+    | 2 =>
+      let qualifier =
+        (nSemitones - Major->Second->to_semitones)->ThirdQualifier.qualifier_of_semitones
+      qualifier->Result.map(qualifier => Second(qualifier))
+    | 3 =>
+      let qualifier =
+        (nSemitones - Major->Third->to_semitones)->ThirdQualifier.qualifier_of_semitones
+      qualifier->Result.map(qualifier => Third(qualifier))
+    | 4 =>
+      let qualifier =
+        (nSemitones - Perfect->Fourth->to_semitones)->FifthQualifier.qualifier_of_semitones
+      qualifier->Result.map(qualifier => Fourth(qualifier))
+    | 5 =>
+      let qualifier =
+        (nSemitones - Perfect->Fifth->to_semitones)->FifthQualifier.qualifier_of_semitones
+      qualifier->Result.map(qualifier => Fifth(qualifier))
+    | 6 =>
+      let qualifier =
+        (nSemitones - Major->Sixth->to_semitones)->ThirdQualifier.qualifier_of_semitones
+      qualifier->Result.map(qualifier => Sixth(qualifier))
+    | 7 =>
+      let qualifier =
+        (nSemitones - Major->Seventh->to_semitones)->ThirdQualifier.qualifier_of_semitones
+      qualifier->Result.map(qualifier => Seventh(qualifier))
+    | 8 =>
+      if nSemitones == 12 {
+        Result.Ok(Octave)
+      } else {
+        Errors.octave_semitones
+      }
+    | _ => Errors.nNotes_too_large
+    }
 
   let addIntervals = (intervalA, intervalB) => {
     let nNotes = intervalA->nNotes_of_interval + intervalB->nNotes_of_interval - 1
@@ -577,11 +583,12 @@ let rec relativeIntervals_of_scale = scale =>
     }
   }
 
+let buildScale = (root, scale) => root->stackIntervalsRelatively(scale->relativeIntervals_of_scale)
 
-let buildScale = (root, scale) =>
-  root->stackIntervalsRelatively(scale->relativeIntervals_of_scale)
-
-let string_of_notes = notes => notes->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " > ")->Js.String2.slice(~from=0, ~to_=-3)
+let string_of_notes = notes =>
+  notes
+  ->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " > ")
+  ->Js.String2.slice(~from=0, ~to_=-3)
 
 let rec relativeIntervals_of_notes = (notes, acc) => {
   switch notes {
@@ -649,9 +656,7 @@ let rec transpose = l =>
 // see https://www.bluesguitarinstitute.com/how-to-harmonize-a-scale/
 let get_harmonization_matrix = scale => {
   let scale_intervals = scale->relativeIntervals_of_scale
-  scale_intervals->List.mapWithIndex((i, _) =>
-    scale_intervals->get_nth_mode(i)
-  )
+  scale_intervals->List.mapWithIndex((i, _) => scale_intervals->get_nth_mode(i))
 }
 
 let print_matrix = matrix => {
@@ -671,31 +676,32 @@ let filter_list_by_indexes = (notes, indexes) =>
 let absoluteIntervals_of_relativeIntervals = relativeIntervals => {
   let rec f = relativeIntervals =>
     switch relativeIntervals {
-      | list{} => Result.Ok(list{})
-      | list{_} => Result.Ok(list{})
-      | list{first, second, ...tail} =>
-        addIntervals(first, second)
-        ->Result.flatMap(absoluteInterval => {
-          f(list{absoluteInterval, ...tail})
-          ->Result.map(absoluteIntervals => list{absoluteInterval, ...absoluteIntervals})
-          }
-        )
+    | list{} => Result.Ok(list{})
+    | list{_} => Result.Ok(list{})
+    | list{first, second, ...tail} =>
+      addIntervals(first, second)->Result.flatMap(absoluteInterval => {
+        f(list{absoluteInterval, ...tail})->Result.map(absoluteIntervals => list{
+          absoluteInterval,
+          ...absoluteIntervals,
+        })
+      })
     }
   switch relativeIntervals {
-    | list{} => Result.Ok(list{})
-    | list{interval} => Result.Ok(list{interval})
-    | list{first, ..._} => f(relativeIntervals)->Result.map(intervals => list{first, ...intervals})
+  | list{} => Result.Ok(list{})
+  | list{interval} => Result.Ok(list{interval})
+  | list{first, ..._} => f(relativeIntervals)->Result.map(intervals => list{first, ...intervals})
   }
 }
 
-let harmonize_scale = (scale: scale, spec) => {
+let harmonize_scale = (scale, spec) => {
   scale
   ->get_harmonization_matrix
   ->transpose
   ->List.reduce(Result.Ok(list{}), (acc, scale_intervals) => {
-    let intervals = scale_intervals
-        ->absoluteIntervals_of_relativeIntervals
-        ->Result.map(intervals => intervals->filter_list_by_indexes(spec))
+    let intervals =
+      scale_intervals
+      ->absoluteIntervals_of_relativeIntervals
+      ->Result.map(intervals => intervals->filter_list_by_indexes(spec))
 
     switch intervals->Result.flatMap(intervals => intervals->chord_of_absoluteIntervals) {
     | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})

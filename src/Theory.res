@@ -146,6 +146,10 @@ module Interval = {
       | Perfect
       | Augmented
 
+    module Errors = {
+      let semitones = Result.Error("Semitones greater that 1 or smaller that -1 are not supported.")
+    }
+
     let to_semitones = qualifier =>
       switch qualifier {
       | Diminished => -1
@@ -155,10 +159,10 @@ module Interval = {
 
     let qualifier_of_semitones = semitones =>
       switch semitones {
-      | -1 => Some(Diminished)
-      | 0 => Some(Perfect)
-      | 1 => Some(Augmented)
-      | _ => None
+      | -1 => Result.Ok(Diminished)
+      | 0 => Result.Ok(Perfect)
+      | 1 => Result.Ok(Augmented)
+      | _ => Errors.semitones
       }
 
     let to_string = qualifier =>
@@ -176,6 +180,10 @@ module Interval = {
       | Major
       | Augmented
 
+    module Errors = {
+      let semitones = Result.Error("Semitones greater that 1 or smaller that -2 are not supported.")
+    }
+
     let to_semitones = qualifier =>
       switch qualifier {
       | Diminished => -2
@@ -186,11 +194,11 @@ module Interval = {
 
     let qualifier_of_semitones = semitones =>
       switch semitones {
-      | -2 => Some(Diminished)
-      | -1 => Some(Minor)
-      | 0 => Some(Major)
-      | 1 => Some(Augmented)
-      | _ => None
+      | -2 => Result.Ok(Diminished)
+      | -1 => Result.Ok(Minor)
+      | 0 => Result.Ok(Major)
+      | 1 => Result.Ok(Augmented)
+      | _ => Errors.semitones
       }
 
     let to_string = qualifier =>
@@ -211,6 +219,12 @@ module Interval = {
     | Sixth(ThirdQualifier.t)
     | Seventh(ThirdQualifier.t)
     | Octave
+
+  module Errors = {
+    let unison_semitones = Result.Error("semitones != 1 are not supported with Unison")
+    let octave_semitones = Result.Error("semitones != 12 are not supported with Octave")
+    let nNotes_too_large = Result.Error("nNotes > 8 (Octave) are not supported")
+  }
 
   let to_semitones = interval =>
     switch interval {
@@ -240,35 +254,35 @@ module Interval = {
       switch nNotes {
       | 1 =>
         if nSemitones == 0 {
-          Some(Unison)
+          Result.Ok(Unison)
         } else {
-          None
+          Errors.unison_semitones
         }
       | 2 =>
         let qualifier = (nSemitones - Major->Second->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Option.map(qualifier => Second(qualifier))
+        qualifier->Result.map(qualifier => Second(qualifier))
       | 3 =>
         let qualifier = (nSemitones - Major->Third->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Option.map(qualifier => Third(qualifier))
+        qualifier->Result.map(qualifier => Third(qualifier))
       | 4 =>
         let qualifier = (nSemitones - Perfect->Fourth->to_semitones)->FifthQualifier.qualifier_of_semitones
-        qualifier->Option.map(qualifier => Fourth(qualifier))
+        qualifier->Result.map(qualifier => Fourth(qualifier))
       | 5 =>
         let qualifier = (nSemitones - Perfect->Fifth->to_semitones)->FifthQualifier.qualifier_of_semitones
-        qualifier->Option.map(qualifier => Fifth(qualifier))
+        qualifier->Result.map(qualifier => Fifth(qualifier))
       | 6 =>
         let qualifier = (nSemitones - Major->Sixth->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Option.map(qualifier => Sixth(qualifier))
+        qualifier->Result.map(qualifier => Sixth(qualifier))
       | 7 =>
         let qualifier = (nSemitones - Major->Seventh->to_semitones)->ThirdQualifier.qualifier_of_semitones
-        qualifier->Option.map(qualifier => Seventh(qualifier))
+        qualifier->Result.map(qualifier => Seventh(qualifier))
       | 8 =>
         if nSemitones == 12 {
-          Some(Octave)
+          Result.Ok(Octave)
         } else {
-          None
+          Errors.octave_semitones
         }
-      | _ => None
+      | _ => Errors.nNotes_too_large
       }
 
   let addIntervals = (intervalA, intervalB) => {
@@ -300,33 +314,33 @@ module Interval = {
   let interval_of_notes = (noteA, noteB) => {
     let deltaSemitones = semitonesBetweenNotes(noteA, noteB)
     switch intervalNumber_of_notes(noteA, noteB, 0) {
-    | 0 => Some(Unison)
+    | 0 => Result.Ok(Unison)
     | 1 =>
       (deltaSemitones - Second(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
-      ->Option.map(qualifier => Second(qualifier))
+      ->Result.map(qualifier => Second(qualifier))
     | 2 =>
       (deltaSemitones - Third(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
-      ->Option.map(qualifier => Third(qualifier))
+      ->Result.map(qualifier => Third(qualifier))
     | 3 =>
       (deltaSemitones - Fourth(Perfect)->to_semitones)
       ->FifthQualifier.qualifier_of_semitones
-      ->Option.map(qualifier => Fourth(qualifier))
+      ->Result.map(qualifier => Fourth(qualifier))
     | 4 =>
       (deltaSemitones - Fifth(Perfect)->to_semitones)
       ->FifthQualifier.qualifier_of_semitones
-      ->Option.map(qualifier => Fifth(qualifier))
+      ->Result.map(qualifier => Fifth(qualifier))
     | 5 =>
       (deltaSemitones - Sixth(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
-      ->Option.map(qualifier => Sixth(qualifier))
+      ->Result.map(qualifier => Sixth(qualifier))
     | 6 =>
       (deltaSemitones - Seventh(Major)->to_semitones)
       ->ThirdQualifier.qualifier_of_semitones
-      ->Option.map(qualifier => Seventh(qualifier))
-    | 7 => Some(Octave)
-    | _ => None
+      ->Result.map(qualifier => Seventh(qualifier))
+    | 7 => Result.Ok(Octave)
+    | _ => Errors.nNotes_too_large
     }
   }
 
@@ -585,7 +599,7 @@ let rec relativeIntervals_of_notes = (notes, acc) => {
   | list{root, next_note, ...rest} =>
     root
     ->interval_of_notes(next_note)
-    ->Option.mapWithDefault(list{}, interval => list{interval})
+    ->Result.mapWithDefault(list{}, interval => list{interval})
     ->List.concat(acc)
     ->List.concat(rest->List.add(next_note)->relativeIntervals_of_notes(list{}))
   | list{_}
@@ -599,7 +613,7 @@ let rec absoluteIntervals_of_notes = (notes, acc) => {
   | list{root, next_note, ...rest} =>
     root
     ->interval_of_notes(next_note)
-    ->Option.mapWithDefault(list{}, interval => list{interval})
+    ->Result.mapWithDefault(list{}, interval => list{interval})
     ->List.concat(acc)
     ->List.concat(rest->List.add(root)->absoluteIntervals_of_notes(list{}))
   | list{_}

@@ -101,7 +101,7 @@ module String = {
           | Some(n) =>
             tonic
             ->Interval.interval_of_notes(n)
-            ->Option.mapWithDefault(
+            ->Result.mapWithDefault(
               <div> {React.string("error")} </div>,
               i => {
                 <div style={getNoteStyle(i)}> {React.string(n->to_string)} </div>

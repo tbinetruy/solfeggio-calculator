@@ -10,107 +10,107 @@ describe("interval_of_semitones", () => {
 
   test("1 notes and 0 semitones", () =>
     expect(interval_of_semitones(1, 0))
-    ->toEqual(Some(Unison)))
+    ->toEqual(Result.Ok(Unison)))
 
   test("1 notes and 20 semitones", () =>
     expect(interval_of_semitones(1, 20))
-    ->toEqual(None))
+    ->toEqual(Interval.Errors.unison_semitones))
 
   test("2 notes and 10 semitones", () =>
     expect(interval_of_semitones(2, 10))
-    ->toEqual(None))
+    ->toEqual(ThirdQualifier.Errors.semitones))
 
   test("2 notes and 1 semitones", () =>
     expect(interval_of_semitones(2, 1))
-    ->toEqual(Some(Minor->Second)))
+    ->toEqual(Result.Ok(Minor->Second)))
 
   test("2 notes and 2 semitones", () =>
     expect(interval_of_semitones(2, 2))
-    ->toEqual(Some(Major->Second)))
+    ->toEqual(Result.Ok(Major->Second)))
 
   test("3 notes and 2 semitones", () =>
     expect(interval_of_semitones(3, 2))
-    ->toEqual(Some(Diminished->Third)))
+    ->toEqual(Result.Ok(Diminished->Third)))
 
   test("3 notes and 3 semitones", () =>
     expect(interval_of_semitones(3, 3))
-    ->toEqual(Some(Minor->Third)))
+    ->toEqual(Result.Ok(Minor->Third)))
 
   test("3 notes and 4 semitones", () =>
     expect(interval_of_semitones(3, 4))
-    ->toEqual(Some(Major->Third)))
+    ->toEqual(Result.Ok(Major->Third)))
 
   test("3 notes and 5 semitones", () =>
     expect(interval_of_semitones(3, 5))
-    ->toEqual(Some(Augmented->Third)))
+    ->toEqual(Result.Ok(Augmented->Third)))
 
   test("4 notes and 4 semitones", () =>
     expect(interval_of_semitones(4, 4))
-    ->toEqual(Some(Diminished->Fourth)))
+    ->toEqual(Result.Ok(Diminished->Fourth)))
 
   test("4 notes and 5 semitones", () =>
     expect(interval_of_semitones(4, 5))
-    ->toEqual(Some(Perfect->Fourth)))
+    ->toEqual(Result.Ok(Perfect->Fourth)))
 
   test("4 notes and 6 semitones", () =>
     expect(interval_of_semitones(4, 6))
-    ->toEqual(Some(Augmented->Fourth)))
+    ->toEqual(Result.Ok(Augmented->Fourth)))
 
   test("5 notes and 6 semitones", () =>
     expect(interval_of_semitones(5, 6))
-    ->toEqual(Some(Diminished->Fifth)))
+    ->toEqual(Result.Ok(Diminished->Fifth)))
 
   test("5 notes and 7 semitones", () =>
     expect(interval_of_semitones(5, 7))
-    ->toEqual(Some(Perfect->Fifth)))
+    ->toEqual(Result.Ok(Perfect->Fifth)))
 
   test("5 notes and 8 semitones", () =>
     expect(interval_of_semitones(5, 8))
-    ->toEqual(Some(Augmented->Fifth)))
+    ->toEqual(Result.Ok(Augmented->Fifth)))
 
   test("6 notes and 7 semitones", () =>
     expect(interval_of_semitones(6, 7))
-    ->toEqual(Some(Diminished->Sixth)))
+    ->toEqual(Result.Ok(Diminished->Sixth)))
 
   test("6 notes and 8 semitones", () =>
     expect(interval_of_semitones(6, 8))
-    ->toEqual(Some(Minor->Sixth)))
+    ->toEqual(Result.Ok(Minor->Sixth)))
 
   test("6 notes and 9 semitones", () =>
     expect(interval_of_semitones(6, 9))
-    ->toEqual(Some(Major->Sixth)))
+    ->toEqual(Result.Ok(Major->Sixth)))
 
   test("6 notes and 10 semitones", () =>
     expect(interval_of_semitones(6, 10))
-    ->toEqual(Some(Augmented->Sixth)))
+    ->toEqual(Result.Ok(Augmented->Sixth)))
 
   test("7 notes and 9 semitones", () =>
     expect(interval_of_semitones(7, 9))
-    ->toEqual(Some(Diminished->Seventh)))
+    ->toEqual(Result.Ok(Diminished->Seventh)))
 
   test("7 notes and 10 semitones", () =>
     expect(interval_of_semitones(7, 10))
-    ->toEqual(Some(Minor->Seventh)))
+    ->toEqual(Result.Ok(Minor->Seventh)))
 
   test("7 notes and 11 semitones", () =>
     expect(interval_of_semitones(7, 11))
-    ->toEqual(Some(Major->Seventh)))
+    ->toEqual(Result.Ok(Major->Seventh)))
 
   test("7 notes and 12 semitones", () =>
     expect(interval_of_semitones(7, 12))
-    ->toEqual(Some(Augmented->Seventh)))
+    ->toEqual(Result.Ok(Augmented->Seventh)))
 
   test("8 notes and 12 semitones", () =>
     expect(interval_of_semitones(8, 12))
-    ->toEqual(Some(Octave)))
+    ->toEqual(Result.Ok(Octave)))
 
   test("9 notes and 12 semitones", () =>
     expect(interval_of_semitones(9, 12))
-    ->toEqual(None))
+    ->toEqual(Interval.Errors.nNotes_too_large))
 
   test("8 notes and 20 semitones", () =>
     expect(interval_of_semitones(7, 20))
-    ->toEqual(None))
+    ->toEqual(Interval.ThirdQualifier.Errors.semitones))
 })
 
 
@@ -119,31 +119,31 @@ describe("addIntervals", () => {
 
   test("Minor->Second + Minor->Second", () =>
     expect(addIntervals(Minor->Second, Minor->Second))
-    ->toEqual(Some(Diminished->Third)))
+    ->toEqual(Result.Ok(Diminished->Third)))
 
   test("Minor->Second + Major->Second", () =>
     expect(addIntervals(Minor->Second, Major->Second))
-    ->toEqual(Some(Minor->Third)))
+    ->toEqual(Result.Ok(Minor->Third)))
 
   test("Major->Second + Minor->Second", () =>
     expect(addIntervals(Major->Second, Minor->Second))
-    ->toEqual(Some(Minor->Third)))
+    ->toEqual(Result.Ok(Minor->Third)))
 
   test("Perfect->Fourth + Perfect->Fifth", () =>
     expect(addIntervals(Perfect->Fourth, Perfect->Fifth))
-    ->toEqual(Some(Octave)))
+    ->toEqual(Result.Ok(Octave)))
 
   test("Minor->Third + Major->Third", () =>
     expect(addIntervals(Minor->Third, Major->Third))
-    ->toEqual(Some(Perfect->Fifth)))
+    ->toEqual(Result.Ok(Perfect->Fifth)))
 
   test("Perfect->Fifth + Major->Third", () =>
     expect(addIntervals(Perfect->Fifth, Major->Third))
-    ->toEqual(Some(Major->Seventh)))
+    ->toEqual(Result.Ok(Major->Seventh)))
 
   test("Major->Seventh + Major->Seventh", () =>
     expect(addIntervals(Major->Seventh, Major->Seventh))
-    ->toEqual(None))
+    ->toEqual(Interval.Errors.nNotes_too_large))
 })
 
 

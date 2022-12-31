@@ -147,7 +147,7 @@ describe("addIntervals", () => {
 })
 
 
-describe("relative_intervals_of_notes", () => {
+describe("absolute_intervals_of_notes", () => {
   open Expect;
 
   test("major triad", () =>
@@ -187,31 +187,35 @@ describe("chord_of_intervals", () => {
   open Expect;
 
   test("minor triad", () =>
-    expect(list{Minor->Third, Major->Third}->chord_of_relativeIntervals)
+    expect(list{Minor->Third, Perfect->Fifth}->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MinorTriad)))
 
   test("major triad", () =>
-    expect(list{Major->Third, Minor->Third}->chord_of_relativeIntervals)
+    expect(list{Major->Third, Perfect->Fifth}->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MajorTriad)))
 
   test("diminished triad", () =>
-    expect(list{Minor->Third, Minor->Third}->chord_of_relativeIntervals)
+    expect(list{Minor->Third, Diminished->Fifth}->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(DiminishedTriad)))
 
   test("minor seventh", () =>
-    expect(list{Minor->Third, Major->Third, Minor->Third}->chord_of_relativeIntervals)
+    expect(list{Minor->Third, Perfect->Fifth, Minor->Seventh}->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MinorSeventh)))
 
   test("major seventh", () =>
-    expect(list{Major->Third, Minor->Third, Major->Third}->chord_of_relativeIntervals)
+    expect(list{Major->Third, Perfect->Fifth, Major->Seventh}->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MajorSeventh)))
 
   test("half diminished seventh", () =>
-    expect(list{Minor->Third, Minor->Third, Major->Third}->chord_of_relativeIntervals)
+    expect(list{Minor->Third, Diminished->Fifth, Minor->Seventh}->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(HalfDiminishedSeventh)))
 
+  test("diminished seventh", () =>
+    expect(list{Minor->Third, Diminished->Fifth, Diminished->Seventh}->chord_of_absoluteIntervals)
+    ->toEqual(Result.Ok(DiminishedSeventh)))
+
   test("dominant seventh", () =>
-    expect(list{Major->Third, Minor->Third, Minor->Third}->chord_of_relativeIntervals)
+    expect(list{Major->Third, Perfect->Fifth, Minor->Seventh}->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(DominanteSeventh)))
 });
 
@@ -253,17 +257,35 @@ describe("harmonize scale", () => {
     ->toEqual(expected)
   })
 
+  test("absoluteIntervals_of_relativeIntervals", () => {
+    let relativeIntervals = MajorScale->relativeIntervals_of_scale
+    let absoluteIntervals = relativeIntervals->absoluteIntervals_of_relativeIntervals
+    let expected = list{
+      Major->Second,
+      Major->Third,
+      Perfect->Fourth,
+      Perfect->Fifth,
+      Major->Sixth,
+      Major->Seventh,
+      Octave,
+    }
+    Js.Console.log(
+      absoluteIntervals->Result.mapWithDefault("error", a => a->string_of_intervals)
+    )
+    expect(absoluteIntervals)
+    ->toEqual(Result.Ok(expected))
+  })
+
   test("harmonization_matrix", () => {
-    let harmonization_matrix = C(Natural)->buildScale(MajorScale)->get_harmonization_matrix
-    let expected = G(Natural)->stackIntervalsRelatively(MajorScale->relativeIntervals_of_scale->get_nth_mode(4))
+    let harmonization_matrix = MajorScale->get_harmonization_matrix
+    let expected = MajorScale->relativeIntervals_of_scale->get_nth_mode(4)
 
     expect(harmonization_matrix->List.getExn(4))
     ->toEqual(expected)
   })
 
-  test("harmonize C major scale with triads", () => {
-    let scale = C(Natural)->buildScale(MajorScale)
-    let scale_harmonization = scale->harmonize_scale_with_triads
+  test("harmonize major scale with triads", () => {
+    let scale_harmonization = MajorScale->harmonize_scale_with_triads
 
     let expected = list{
       MajorTriad,
@@ -273,16 +295,14 @@ describe("harmonize scale", () => {
       MajorTriad,
       MinorTriad,
       DiminishedTriad,
-      MajorTriad,
     }->Result.Ok
 
     expect(scale_harmonization)
     ->toEqual(expected)
   })
 
-  test("harmonize C major scale with tetrads", () => {
-    let scale = C(Natural)->buildScale(MajorScale)
-    let scale_harmonization = scale->harmonize_scale_with_tetrades
+  test("harmonize major scale with tetrads", () => {
+    let scale_harmonization = MajorScale->harmonize_scale_with_tetrades
 
     let expected = list{
       MajorSeventh,
@@ -292,7 +312,6 @@ describe("harmonize scale", () => {
       DominanteSeventh,
       MinorSeventh,
       HalfDiminishedSeventh,
-      MajorSeventh,
     }->Result.Ok
 
     expect(scale_harmonization)

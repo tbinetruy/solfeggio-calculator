@@ -616,16 +616,16 @@ let string_of_intervals = intervals => {
   intervals->List.reduce("", (acc, interval) => acc ++ " -> " ++ interval->Interval.to_string)
 }
 
-let chord_of_relativeIntervals = intervals =>
+let chord_of_absoluteIntervals = intervals =>
   switch intervals {
-  | list{Third(Minor), Third(Major)} => Result.Ok(MinorTriad)
-  | list{Third(Major), Third(Minor)} => Result.Ok(MajorTriad)
-  | list{Third(Minor), Third(Minor)} => Result.Ok(DiminishedTriad)
-  | list{Third(Minor), Third(Major), Third(Minor)} => Result.Ok(MinorSeventh)
-  | list{Third(Major), Third(Minor), Third(Major)} => Result.Ok(MajorSeventh)
-  | list{Third(Minor), Third(Minor), Third(Major)} => Result.Ok(HalfDiminishedSeventh)
-  | list{Third(Major), Third(Minor), Third(Minor)} => Result.Ok(DominanteSeventh)
-  | list{Third(Minor), Third(Minor), Third(Minor)} => Result.Ok(DiminishedSeventh)
+  | list{Third(Minor), Fifth(Perfect)} => Result.Ok(MinorTriad)
+  | list{Third(Major), Fifth(Perfect)} => Result.Ok(MajorTriad)
+  | list{Third(Minor), Fifth(Diminished)} => Result.Ok(DiminishedTriad)
+  | list{Third(Minor), Fifth(Perfect), Seventh(Minor)} => Result.Ok(MinorSeventh)
+  | list{Third(Major), Fifth(Perfect), Seventh(Major)} => Result.Ok(MajorSeventh)
+  | list{Third(Minor), Fifth(Diminished), Seventh(Minor)} => Result.Ok(HalfDiminishedSeventh)
+  | list{Third(Major), Fifth(Perfect), Seventh(Minor)} => Result.Ok(DominanteSeventh)
+  | list{Third(Minor), Fifth(Diminished), Seventh(Diminished)} => Result.Ok(DiminishedSeventh)
   | _ =>
     Result.Error(
       "Could not find the matching chord for intervals" ++
@@ -647,10 +647,12 @@ let rec transpose = l =>
   }
 
 // see https://www.bluesguitarinstitute.com/how-to-harmonize-a-scale/
-let get_harmonization_matrix = scale =>
-  scale->List.mapWithIndex((i, note) =>
-    note->stackIntervalsRelatively(MajorScale->relativeIntervals_of_scale->get_nth_mode(i))
+let get_harmonization_matrix = scale => {
+  let scale_intervals = scale->relativeIntervals_of_scale
+  scale_intervals->List.mapWithIndex((i, _) =>
+    scale_intervals->get_nth_mode(i)
   )
+}
 
 let print_matrix = matrix => {
   let string_of_row = row => row->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " ")
@@ -658,30 +660,51 @@ let print_matrix = matrix => {
   matrix->List.reduce("", (acc, row) => acc ++ row->string_of_row ++ "\n")
 }
 
-let filter_notes = (notes, spec) =>
+let filter_list_by_indexes = (notes, indexes) =>
   notes->List.reduceWithIndex(list{}, (acc, note, i) => {
-    switch spec->Set.Int.has(i) {
+    switch indexes->Set.Int.has(i) {
     | true => acc->List.concat(list{note})
     | false => acc
     }
   })
 
-let harmonize_scale = (scale, spec) => {
+let absoluteIntervals_of_relativeIntervals = relativeIntervals => {
+  let rec f = relativeIntervals =>
+    switch relativeIntervals {
+      | list{} => Result.Ok(list{})
+      | list{_} => Result.Ok(list{})
+      | list{first, second, ...tail} =>
+        addIntervals(first, second)
+        ->Result.flatMap(absoluteInterval => {
+          f(list{absoluteInterval, ...tail})
+          ->Result.map(absoluteIntervals => list{absoluteInterval, ...absoluteIntervals})
+          }
+        )
+    }
+  switch relativeIntervals {
+    | list{} => Result.Ok(list{})
+    | list{interval} => Result.Ok(list{interval})
+    | list{first, ..._} => f(relativeIntervals)->Result.map(intervals => list{first, ...intervals})
+  }
+}
+
+let harmonize_scale = (scale: scale, spec) => {
   scale
   ->get_harmonization_matrix
   ->transpose
-  ->List.reduce(Result.Ok(list{}), (acc, row) => {
-    let chord_notes = row->filter_notes(spec)
-    let intervals = chord_notes->relativeIntervals_of_notes(list{})
+  ->List.reduce(Result.Ok(list{}), (acc, scale_intervals) => {
+    let intervals = scale_intervals
+        ->absoluteIntervals_of_relativeIntervals
+        ->Result.map(intervals => intervals->filter_list_by_indexes(spec))
 
-    switch intervals->chord_of_relativeIntervals {
+    switch intervals->Result.flatMap(intervals => intervals->chord_of_absoluteIntervals) {
     | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
-    | Result.Error(msg) => Result.Error(msg ++ " (" ++ chord_notes->string_of_notes ++ ")")
+    | Result.Error(msg) => Result.Error(msg)
     }
   })
   ->Result.map(List.reverse)
 }
 
-let harmonize_scale_with_triads = scale => scale->harmonize_scale([0, 2, 4]->Set.Int.fromArray)
+let harmonize_scale_with_triads = scale => scale->harmonize_scale([1, 3]->Set.Int.fromArray)
 
-let harmonize_scale_with_tetrades = scale => scale->harmonize_scale([0, 2, 4, 6]->Set.Int.fromArray)
+let harmonize_scale_with_tetrades = scale => scale->harmonize_scale([1, 3, 5]->Set.Int.fromArray)

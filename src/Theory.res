@@ -693,7 +693,7 @@ let absoluteIntervals_of_relativeIntervals = relativeIntervals => {
   }
 }
 
-let harmonize_scale = (scale, spec) => {
+let chords_of_scale = (scale, spec) => {
   scale
   ->get_harmonization_matrix
   ->transpose
@@ -711,6 +711,27 @@ let harmonize_scale = (scale, spec) => {
   ->Result.map(List.reverse)
 }
 
-let harmonize_scale_with_triads = scale => scale->harmonize_scale([1, 3]->Set.Int.fromArray)
+let triads_of_scale = scale => scale->chords_of_scale([1, 3]->Set.Int.fromArray)
 
-let harmonize_scale_with_tetrades = scale => scale->harmonize_scale([1, 3, 5]->Set.Int.fromArray)
+let tetrads_of_scale = scale => scale->chords_of_scale([1, 3, 5]->Set.Int.fromArray)
+
+
+let harmonize_scale = (scale, root, spec) => {
+  let scale_notes = root->buildScale(scale)
+  let scale_chords = scale->chords_of_scale(spec->Set.Int.fromArray)
+  let rec f = arg =>
+    switch arg {
+      | list{(root, chord), ...tail} => list{root->buildChord(chord), ...f(tail)}
+      | list{} => list{}
+    }
+  scale_chords->Result.map(scale_chords => f(List.zip(scale_notes, scale_chords)))
+}
+
+let harmonize_scale_with_triads = (scale, root) =>
+    harmonize_scale(scale, root, [1, 3])
+
+let harmonize_scale_with_tetrads = (scale, root) =>
+    harmonize_scale(scale, root, [1, 3, 5])
+
+let string_of_progression = p =>
+  p->List.reduce("", (acc, h) => acc ++ h->string_of_notes ++ " | ")

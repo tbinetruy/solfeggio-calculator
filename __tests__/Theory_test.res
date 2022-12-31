@@ -285,7 +285,7 @@ describe("harmonize scale", () => {
   })
 
   test("harmonize major scale with triads", () => {
-    let scale_harmonization = MajorScale->harmonize_scale_with_triads
+    let scale_harmonization = MajorScale->triads_of_scale
 
     let expected = list{
       MajorTriad,
@@ -302,7 +302,7 @@ describe("harmonize scale", () => {
   })
 
   test("harmonize major scale with tetrads", () => {
-    let scale_harmonization = MajorScale->harmonize_scale_with_tetrades
+    let scale_harmonization = MajorScale->tetrads_of_scale
 
     let expected = list{
       MajorSeventh,
@@ -312,6 +312,58 @@ describe("harmonize scale", () => {
       DominanteSeventh,
       MinorSeventh,
       HalfDiminishedSeventh,
+    }->Result.Ok
+
+    expect(scale_harmonization)
+    ->toEqual(expected)
+  })
+
+
+  test("harmonize C major scale with triads", () => {
+    let scale_harmonization = MajorScale->harmonize_scale_with_triads(C(Natural))
+
+    let expected = list{
+      C(Natural)->buildChord(MajorTriad),
+      D(Natural)->buildChord(MinorTriad),
+      E(Natural)->buildChord(MinorTriad),
+      F(Natural)->buildChord(MajorTriad),
+      G(Natural)->buildChord(MajorTriad),
+      A(Natural)->buildChord(MinorTriad),
+      B(Natural)->buildChord(DiminishedTriad),
+    }->Result.Ok
+
+    expect(scale_harmonization)
+    ->toEqual(expected)
+  })
+
+  test("harmonize C major scale with tetrads", () => {
+    let scale_harmonization = MajorScale->harmonize_scale_with_tetrads(C(Natural))
+
+    let expected = list{
+      C(Natural)->buildChord(MajorSeventh),
+      D(Natural)->buildChord(MinorSeventh),
+      E(Natural)->buildChord(MinorSeventh),
+      F(Natural)->buildChord(MajorSeventh),
+      G(Natural)->buildChord(DominanteSeventh),
+      A(Natural)->buildChord(MinorSeventh),
+      B(Natural)->buildChord(HalfDiminishedSeventh),
+    }->Result.Ok
+
+    expect(scale_harmonization)
+    ->toEqual(expected)
+  })
+
+  test("harmonize dorian mode with tetrads", () => {
+    let scale_harmonization = DorianMode->tetrads_of_scale
+
+    let expected = list{
+      MinorSeventh,
+      MinorSeventh,
+      MajorSeventh,
+      DominanteSeventh,
+      MinorSeventh,
+      HalfDiminishedSeventh,
+      MajorSeventh,
     }->Result.Ok
 
     expect(scale_harmonization)

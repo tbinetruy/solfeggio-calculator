@@ -269,9 +269,6 @@ describe("harmonize scale", () => {
       Major->Seventh,
       Octave,
     }
-    Js.Console.log(
-      absoluteIntervals->Result.mapWithDefault("error", a => a->string_of_intervals)
-    )
     expect(absoluteIntervals)
     ->toEqual(Result.Ok(expected))
   })

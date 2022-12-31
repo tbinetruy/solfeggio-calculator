@@ -590,8 +590,8 @@ let buildScale = (root, scale) => root->stackIntervalsRelatively(scale->relative
 
 let string_of_notes = notes =>
   notes
-  ->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " > ")
-  ->Js.String2.slice(~from=0, ~to_=-3)
+  ->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ "  ")
+  ->Js.String2.slice(~from=0, ~to_=-2)
 
 let rec relativeIntervals_of_notes = (notes, acc) => {
   switch notes {

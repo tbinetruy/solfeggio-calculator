@@ -42,6 +42,7 @@ let make = () => {
   let (tunning, setTunning) = React.useState(() => Standard)
   let root = rootPitchClass->Note.setAccidental(accidental)
 
+  let buildInterval = Interval.buildInterval
   let notes = switch (intervalType, chordType, scaleType) {
   | (Some(intervalType), Some(_), Some(_)) => root->buildInterval(intervalType)
   | (Some(intervalType), None, Some(_)) => root->buildInterval(intervalType)

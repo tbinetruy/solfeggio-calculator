@@ -328,6 +328,20 @@ module Interval = {
     intervals->List.reduce(list{root}, (acc, interval) =>
       acc->List.concat(list{note_of_interval(root, interval)})
     )
+
+  let buildInterval = (root, named_interval) => {
+    switch named_interval {
+    | Second(qualifier) => root->stackIntervalsRelatively(list{Second(qualifier)})
+    | Third(qualifier) => root->stackIntervalsRelatively(list{Third(qualifier)})
+    | Fourth(qualifier) => root->stackIntervalsRelatively(list{Fourth(qualifier)})
+    | Fifth(qualifier) => root->stackIntervalsRelatively(list{Fifth(qualifier)})
+    | Sixth(qualifier) => root->stackIntervalsRelatively(list{Sixth(qualifier)})
+    | Seventh(qualifier) => root->stackIntervalsRelatively(list{Seventh(qualifier)})
+    | Unison
+    | Octave =>
+      list{root}
+    }
+  }
 }
 
 let getTonic = notes =>
@@ -339,20 +353,6 @@ let getTonic = notes =>
   }
 
 open Interval
-
-let buildInterval = (root, named_interval) => {
-  switch named_interval {
-  | Second(qualifier) => root->stackIntervalsRelatively(list{Second(qualifier)})
-  | Third(qualifier) => root->stackIntervalsRelatively(list{Third(qualifier)})
-  | Fourth(qualifier) => root->stackIntervalsRelatively(list{Fourth(qualifier)})
-  | Fifth(qualifier) => root->stackIntervalsRelatively(list{Fifth(qualifier)})
-  | Sixth(qualifier) => root->stackIntervalsRelatively(list{Sixth(qualifier)})
-  | Seventh(qualifier) => root->stackIntervalsRelatively(list{Seventh(qualifier)})
-  | Unison
-  | Octave =>
-    list{root}
-  }
-}
 
 type chord =
   | MajorTriad

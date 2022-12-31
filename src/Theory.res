@@ -473,6 +473,9 @@ let string_of_chord = chord =>
   | MinorSixth => "minorSixth"
   }
 
+let string_of_chords = chords =>
+    chords->List.reduce("", (acc, chord) => acc ++ chord->string_of_chord ++ " | ")->Js.String2.slice(~from=0, ~to_=-3)
+
 let buildChord = (root, chord) =>
   switch chord {
   | MajorTriad => root->stackIntervalsRelatively(list{Major->Third, Minor->Third})

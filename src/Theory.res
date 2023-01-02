@@ -631,11 +631,14 @@ let chord_of_absoluteIntervals = intervals =>
   | list{Third(Minor), Fifth(Perfect)} => Result.Ok(MinorTriad)
   | list{Third(Major), Fifth(Perfect)} => Result.Ok(MajorTriad)
   | list{Third(Minor), Fifth(Diminished)} => Result.Ok(DiminishedTriad)
+  | list{Third(Major), Fifth(Augmented)} => Result.Ok(AugmentedTriad)
   | list{Third(Minor), Fifth(Perfect), Seventh(Minor)} => Result.Ok(MinorSeventh)
   | list{Third(Major), Fifth(Perfect), Seventh(Major)} => Result.Ok(MajorSeventh)
   | list{Third(Minor), Fifth(Diminished), Seventh(Minor)} => Result.Ok(HalfDiminishedSeventh)
   | list{Third(Major), Fifth(Perfect), Seventh(Minor)} => Result.Ok(DominanteSeventh)
   | list{Third(Minor), Fifth(Diminished), Seventh(Diminished)} => Result.Ok(DiminishedSeventh)
+  | list{Third(Major), Fifth(Augmented), Seventh(Major)} => Result.Ok(AugmentedMajorSeventh)
+  | list{Third(Minor), Fifth(Perfect), Seventh(Major)} => Result.Ok(MinorSeventhMajor)
   | _ =>
     Result.Error(
       "Could not find the matching chord for intervals" ++

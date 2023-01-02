@@ -1,8 +1,8 @@
 open Theory
 open Theory.Harmonization
 open Theory.Interval
+open Theory.Intervals
 open Theory.Note
-open Theory.Notes
 open Theory.Chord
 open Theory.Scale
 open Jest
@@ -155,71 +155,72 @@ describe("absolute_intervals_of_notes", () => {
   open Expect;
 
   test("major triad", () =>
-    expect(list{C(Natural), E(Natural), G(Natural)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Major->Third, Minor->Third}))
+    expect(list{C(Natural), E(Natural), G(Natural)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Major->Third, Minor->Third})))
 
   test("minor triad", () =>
-    expect(list{C(Natural), E(Flat), G(Natural)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Minor->Third, Major->Third}))
+    expect(list{C(Natural), E(Flat), G(Natural)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Minor->Third, Major->Third})))
 
   test("diminished triad", () =>
-    expect(list{C(Natural), E(Flat), G(Flat)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Minor->Third, Minor->Third}))
+    expect(list{C(Natural), E(Flat), G(Flat)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Minor->Third, Minor->Third})))
 
   test("major seventh", () =>
-    expect(list{C(Natural), E(Natural), G(Natural), B(Natural)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Major->Third, Minor->Third, Major->Third}))
+    expect(list{C(Natural), E(Natural), G(Natural), B(Natural)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Major->Third, Minor->Third, Major->Third})))
 
   test("minor seventh", () =>
-    expect(list{C(Natural), E(Flat), G(Natural), B(Flat)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Minor->Third, Major->Third, Minor->Third}))
+    expect(list{C(Natural), E(Flat), G(Natural), B(Flat)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Minor->Third, Major->Third, Minor->Third})))
 
   test("dominant seventh", () =>
-    expect(list{C(Natural), E(Natural), G(Natural), B(Flat)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Major->Third, Minor->Third, Minor->Third}))
+    expect(list{C(Natural), E(Natural), G(Natural), B(Flat)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Major->Third, Minor->Third, Minor->Third})))
 
   test("diminished interval", () =>
-    expect(list{E(Flat), G(DoubleFlat)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Diminished->Third}))
+    expect(list{E(Flat), G(DoubleFlat)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Diminished->Third})))
 
   test("half diminished seventh", () =>
-    expect(list{C(Natural), E(Flat), G(Flat), B(Flat)}->relativeIntervals_of_notes(list{}))
-    ->toEqual(list{Minor->Third, Minor->Third, Major->Third}))
+    expect(list{C(Natural), E(Flat), G(Flat), B(Flat)}->relativeIntervals_of_notes)
+    ->toEqual(Relative(list{Minor->Third, Minor->Third, Major->Third})))
 })
 
 describe("chord_of_intervals", () => {
   open Expect;
+  open Intervals;
 
   test("minor triad", () =>
-    expect(list{Minor->Third, Perfect->Fifth}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Minor->Third, Perfect->Fifth})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MinorTriad)))
 
   test("major triad", () =>
-    expect(list{Major->Third, Perfect->Fifth}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Major->Third, Perfect->Fifth})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MajorTriad)))
 
   test("diminished triad", () =>
-    expect(list{Minor->Third, Diminished->Fifth}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Minor->Third, Diminished->Fifth})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(DiminishedTriad)))
 
   test("minor seventh", () =>
-    expect(list{Minor->Third, Perfect->Fifth, Minor->Seventh}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Minor->Third, Perfect->Fifth, Minor->Seventh})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MinorSeventh)))
 
   test("major seventh", () =>
-    expect(list{Major->Third, Perfect->Fifth, Major->Seventh}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Major->Third, Perfect->Fifth, Major->Seventh})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(MajorSeventh)))
 
   test("half diminished seventh", () =>
-    expect(list{Minor->Third, Diminished->Fifth, Minor->Seventh}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Minor->Third, Diminished->Fifth, Minor->Seventh})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(HalfDiminishedSeventh)))
 
   test("diminished seventh", () =>
-    expect(list{Minor->Third, Diminished->Fifth, Diminished->Seventh}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Minor->Third, Diminished->Fifth, Diminished->Seventh})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(DiminishedSeventh)))
 
   test("dominant seventh", () =>
-    expect(list{Major->Third, Perfect->Fifth, Minor->Seventh}->chord_of_absoluteIntervals)
+    expect(Absolute(list{Major->Third, Perfect->Fifth, Minor->Seventh})->chord_of_absoluteIntervals)
     ->toEqual(Result.Ok(DominanteSeventh)))
 });
 
@@ -263,8 +264,8 @@ describe("harmonize scale", () => {
 
   test("absoluteIntervals_of_relativeIntervals", () => {
     let relativeIntervals = MajorScale->relativeIntervals_of_scale
-    let absoluteIntervals = relativeIntervals->absoluteIntervals_of_relativeIntervals
-    let expected = list{
+    let absoluteIntervals = relativeIntervals->to_absolute
+    let expected = Absolute(list{
       Major->Second,
       Major->Third,
       Perfect->Fourth,
@@ -272,7 +273,7 @@ describe("harmonize scale", () => {
       Major->Sixth,
       Major->Seventh,
       Octave,
-    }
+    })
     expect(absoluteIntervals)
     ->toEqual(Result.Ok(expected))
   })

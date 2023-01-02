@@ -111,7 +111,17 @@ module Note = {
   }
 }
 
-open Note
+module Notes = {
+  open Note
+
+  type t = list<note>
+
+  let string_of_notes = notes =>
+    notes
+    ->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ "  ")
+    ->Js.String2.slice(~from=0, ~to_=-2)
+}
+
 
 type semitone = int
 
@@ -140,6 +150,8 @@ type semitone = int
  */
 
 module Interval = {
+  open Note
+
   module FifthQualifier = {
     type t =
       | Diminished
@@ -291,12 +303,6 @@ module Interval = {
     | _ => Errors.nNotes_too_large
     }
 
-  let addIntervals = (intervalA, intervalB) => {
-    let nNotes = intervalA->nNotes_of_interval + intervalB->nNotes_of_interval - 1
-    let nSemitones = intervalA->to_semitones + intervalB->to_semitones
-    interval_of_semitones(nNotes, nSemitones)
-  }
-
   let to_string = interval =>
     switch interval {
     | Unison => "unison"
@@ -378,42 +384,10 @@ module Interval = {
     newNote->setAccidental(accidental)
   }
 
-  let stackIntervalsRelatively = (root, intervals) => {
-    let rec stackClassIntervalsRelatively = (root, class_intervals) => {
-      switch class_intervals {
-      | list{} => list{root}
-      | list{interval} => list{root, note_of_interval(root, interval)}
-      | list{interval, ...rest} =>
-        let nextNote = note_of_interval(root, interval)
-        let subChord = switch stackClassIntervalsRelatively(nextNote, rest) {
-        | list{}
-        | list{_} =>
-          list{}
-        | list{_, ...rest} => rest
-        }
-        list{root, nextNote}->List.concat(subChord)
-      }
-    }
-    stackClassIntervalsRelatively(root, intervals)
-  }
-
-  let stackIntervalsAbsolutely = (root, intervals) =>
-    intervals->List.reduce(list{root}, (acc, interval) =>
-      acc->List.concat(list{note_of_interval(root, interval)})
-    )
-
-  let buildInterval = (root, named_interval) => {
-    switch named_interval {
-    | Second(qualifier) => root->stackIntervalsRelatively(list{Second(qualifier)})
-    | Third(qualifier) => root->stackIntervalsRelatively(list{Third(qualifier)})
-    | Fourth(qualifier) => root->stackIntervalsRelatively(list{Fourth(qualifier)})
-    | Fifth(qualifier) => root->stackIntervalsRelatively(list{Fifth(qualifier)})
-    | Sixth(qualifier) => root->stackIntervalsRelatively(list{Sixth(qualifier)})
-    | Seventh(qualifier) => root->stackIntervalsRelatively(list{Seventh(qualifier)})
-    | Unison
-    | Octave =>
-      list{root}
-    }
+  let addIntervals = (intervalA, intervalB) => {
+    let nNotes = intervalA->nNotes_of_interval + intervalB->nNotes_of_interval - 1
+    let nSemitones = intervalA->to_semitones + intervalB->to_semitones
+    interval_of_semitones(nNotes, nSemitones)
   }
 }
 
@@ -425,46 +399,109 @@ let getTonic = notes =>
     Some(head)
   }
 
-open Interval
+module Intervals = {
+  open Interval
 
-module Notes = {
-  type t = list<note>
+  type t =
+    | Relative(list<Interval.interval>)
+    | Absolute(list<Interval.interval>)
 
-  let string_of_notes = notes =>
-    notes
-    ->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ "  ")
-    ->Js.String2.slice(~from=0, ~to_=-2)
+  let to_notes = (root, intervals) =>
+    switch intervals {
+    | Relative(intervals) =>
+      let rec stackClassIntervalsRelatively = (root, class_intervals) => {
+        switch class_intervals {
+        | list{} => list{root}
+        | list{interval} => list{root, note_of_interval(root, interval)}
+        | list{interval, ...rest} =>
+          let nextNote = note_of_interval(root, interval)
+          let subChord = switch stackClassIntervalsRelatively(nextNote, rest) {
+          | list{}
+          | list{_} =>
+            list{}
+          | list{_, ...rest} => rest
+          }
+          list{root, nextNote}->List.concat(subChord)
+        }
+      }
+      stackClassIntervalsRelatively(root, intervals)
+    | Absolute(intervals) =>
+      intervals->List.reduce(list{root}, (acc, interval) =>
+        acc->List.concat(list{note_of_interval(root, interval)})
+      )
+    }
 
-  let rec relativeIntervals_of_notes = (notes, acc) => {
-    switch notes {
-    | list{root, next_note, ...rest} =>
-      root
-      ->interval_of_notes(next_note)
-      ->Result.mapWithDefault(list{}, interval => list{interval})
-      ->List.concat(acc)
-      ->List.concat(rest->List.add(next_note)->relativeIntervals_of_notes(list{}))
-    | list{_}
-    | list{} =>
-      list{}
+  let buildInterval = (root, named_interval) => {
+    switch named_interval {
+    | Second(qualifier) => root->to_notes(Relative(list{Second(qualifier)}))
+    | Third(qualifier) => root->to_notes(Relative(list{Third(qualifier)}))
+    | Fourth(qualifier) => root->to_notes(Relative(list{Fourth(qualifier)}))
+    | Fifth(qualifier) => root->to_notes(Relative(list{Fifth(qualifier)}))
+    | Sixth(qualifier) => root->to_notes(Relative(list{Sixth(qualifier)}))
+    | Seventh(qualifier) => root->to_notes(Relative(list{Seventh(qualifier)}))
+    | Unison
+    | Octave =>
+      list{root}
     }
   }
 
-  let rec absoluteIntervals_of_notes = (notes, acc) => {
-    switch notes {
-    | list{root, next_note, ...rest} =>
-      root
-      ->interval_of_notes(next_note)
-      ->Result.mapWithDefault(list{}, interval => list{interval})
-      ->List.concat(acc)
-      ->List.concat(rest->List.add(root)->absoluteIntervals_of_notes(list{}))
-    | list{_}
-    | list{} =>
-      list{}
+  let relativeIntervals_of_notes = notes => {
+    let rec relativeIntervals_of_notes = (notes, acc) => {
+      switch notes {
+      | list{root, next_note, ...rest} =>
+        root
+        ->interval_of_notes(next_note)
+        ->Result.mapWithDefault(list{}, interval => list{interval})
+        ->List.concat(acc)
+        ->List.concat(rest->List.add(next_note)->relativeIntervals_of_notes(list{}))
+      | list{_}
+      | list{} =>
+        list{}
+      }
     }
+    relativeIntervals_of_notes(notes, list{})->Relative
   }
+
+  let absoluteIntervals_of_notes = notes => {
+    let rec absoluteIntervals_of_notes = (notes, acc) => {
+      switch notes {
+      | list{root, next_note, ...rest} =>
+        root
+        ->interval_of_notes(next_note)
+        ->Result.mapWithDefault(list{}, interval => list{interval})
+        ->List.concat(acc)
+        ->List.concat(rest->List.add(root)->absoluteIntervals_of_notes(list{}))
+      | list{_}
+      | list{} =>
+        list{}
+      }
+    }
+    absoluteIntervals_of_notes(notes, list{})->Absolute
+  }
+
+  let to_list = intervals =>
+    switch intervals {
+    | Absolute(intervals)
+    | Relative(intervals) => intervals
+    }
+
+  let map = (intervals, f) =>
+    switch intervals {
+    | Absolute(intervals) => Absolute(f(intervals))
+    | Relative(intervals) => Relative(f(intervals))
+    }
+
+  let string_of_intervals = intervals =>
+    intervals
+    ->to_list
+    ->List.reduce("", (acc, interval) => acc ++ interval->Interval.to_string ++ " > ")
+    ->Js.String2.slice(~from=0, ~to_=-3)
 }
 
 module Chord = {
+  open Interval
+  open Intervals
+
   type chord =
     | MajorTriad
     | MinorTriad
@@ -486,7 +523,6 @@ module Chord = {
     | SeventhDiminishedFifth
     | MajorSixth
     | MinorSixth
-
 
   let string_of_chord = chord =>
     switch chord {
@@ -514,45 +550,83 @@ module Chord = {
 
   let buildChord = (root, chord) =>
     switch chord {
-    | MajorTriad => root->stackIntervalsRelatively(list{Major->Third, Minor->Third})
-    | MinorTriad => root->stackIntervalsRelatively(list{Minor->Third, Major->Third})
-    | AugmentedTriad => root->stackIntervalsRelatively(list{Major->Third, Major->Third})
-    | DiminishedTriad => root->stackIntervalsRelatively(list{Minor->Third, Minor->Third})
-    | SuspendedTriad => root->stackIntervalsRelatively(list{Perfect->Fourth, Major->Second})
-    | PowerChord => root->stackIntervalsRelatively(list{Perfect->Fifth})
-    | AugmentedPowerChord => root->stackIntervalsRelatively(list{Augmented->Fifth})
-    | DiminishedPowerChord => root->stackIntervalsRelatively(list{Diminished->Fifth})
-    | MajorSeventh => root->stackIntervalsRelatively(list{Major->Third, Minor->Third, Major->Third})
-    | DominanteSeventh =>
-      root->stackIntervalsRelatively(list{Major->Third, Minor->Third, Minor->Third})
-    | MinorSeventhMajor =>
-      root->stackIntervalsRelatively(list{Minor->Third, Major->Third, Major->Third})
-    | MinorSeventh => root->stackIntervalsRelatively(list{Minor->Third, Major->Third, Minor->Third})
+    | MajorTriad => root->to_notes(Relative(list{Major->Third, Minor->Third}))
+    | MinorTriad => root->to_notes(Relative(list{Minor->Third, Major->Third}))
+    | AugmentedTriad => root->to_notes(Relative(list{Major->Third, Major->Third}))
+    | DiminishedTriad => root->to_notes(Relative(list{Minor->Third, Minor->Third}))
+    | SuspendedTriad => root->to_notes(Relative(list{Perfect->Fourth, Major->Second}))
+    | PowerChord => root->to_notes(Relative(list{Perfect->Fifth}))
+    | AugmentedPowerChord => root->to_notes(Relative(list{Augmented->Fifth}))
+    | DiminishedPowerChord => root->to_notes(Relative(list{Diminished->Fifth}))
+    | MajorSeventh => root->to_notes(Relative(list{Major->Third, Minor->Third, Major->Third}))
+    | DominanteSeventh => root->to_notes(Relative(list{Major->Third, Minor->Third, Minor->Third}))
+    | MinorSeventhMajor => root->to_notes(Relative(list{Minor->Third, Major->Third, Major->Third}))
+    | MinorSeventh => root->to_notes(Relative(list{Minor->Third, Major->Third, Minor->Third}))
     | AugmentedMajorSeventh =>
-      root->stackIntervalsRelatively(list{Major->Third, Major->Third, Minor->Third})
+      root->to_notes(Relative(list{Major->Third, Major->Third, Minor->Third}))
     | HalfDiminishedSeventh =>
-      root->stackIntervalsAbsolutely(list{Minor->Third, Diminished->Fifth, Minor->Seventh})
+      root->to_notes(Absolute(list{Minor->Third, Diminished->Fifth, Minor->Seventh}))
     | DiminishedSeventh =>
-      root->stackIntervalsAbsolutely(list{Minor->Third, Diminished->Fifth, Diminished->Seventh})
+      root->to_notes(Absolute(list{Minor->Third, Diminished->Fifth, Diminished->Seventh}))
     | SuspendedSeventh =>
-      root->stackIntervalsAbsolutely(list{Perfect->Fourth, Perfect->Fifth, Minor->Seventh})
+      root->to_notes(Absolute(list{Perfect->Fourth, Perfect->Fifth, Minor->Seventh}))
     | SeventhAugmentedFifth =>
-      root->stackIntervalsAbsolutely(list{Major->Third, Augmented->Fifth, Minor->Seventh})
+      root->to_notes(Absolute(list{Major->Third, Augmented->Fifth, Minor->Seventh}))
     | SeventhDiminishedFifth =>
-      root->stackIntervalsAbsolutely(list{Major->Third, Diminished->Fifth, Minor->Seventh})
-    | MajorSixth => root->stackIntervalsAbsolutely(list{Major->Third, Perfect->Fifth, Major->Sixth})
-    | MinorSixth => root->stackIntervalsAbsolutely(list{Minor->Third, Perfect->Fifth, Major->Sixth})
-  }
+      root->to_notes(Absolute(list{Major->Third, Diminished->Fifth, Minor->Seventh}))
+    | MajorSixth => root->to_notes(Absolute(list{Major->Third, Perfect->Fifth, Major->Sixth}))
+    | MinorSixth => root->to_notes(Absolute(list{Minor->Third, Perfect->Fifth, Major->Sixth}))
+    }
 
   let string_of_chords = chords =>
     chords
     ->List.reduce("", (acc, chord) => acc ++ chord->string_of_chord ++ " | ")
     ->Js.String2.slice(~from=0, ~to_=-3)
+
+  let chord_of_absoluteIntervals = intervals =>
+    switch intervals {
+    | Absolute(intervals) =>
+      switch intervals {
+      | list{Third(Minor), Fifth(Perfect)} => Result.Ok(MinorTriad)
+      | list{Third(Major), Fifth(Perfect)} => Result.Ok(MajorTriad)
+      | list{Third(Minor), Fifth(Diminished)} => Result.Ok(DiminishedTriad)
+      | list{Third(Major), Fifth(Augmented)} => Result.Ok(AugmentedTriad)
+      | list{Third(Minor), Fifth(Perfect), Seventh(Minor)} => Result.Ok(MinorSeventh)
+      | list{Third(Major), Fifth(Perfect), Seventh(Major)} => Result.Ok(MajorSeventh)
+      | list{Third(Minor), Fifth(Diminished), Seventh(Minor)} => Result.Ok(HalfDiminishedSeventh)
+      | list{Third(Major), Fifth(Perfect), Seventh(Minor)} => Result.Ok(DominanteSeventh)
+      | list{Third(Minor), Fifth(Diminished), Seventh(Diminished)} => Result.Ok(DiminishedSeventh)
+      | list{Third(Major), Fifth(Augmented), Seventh(Major)} => Result.Ok(AugmentedMajorSeventh)
+      | list{Third(Minor), Fifth(Perfect), Seventh(Major)} => Result.Ok(MinorSeventhMajor)
+      | _ =>
+        Result.Error(
+          "Could not find the matching chord for intervals" ++
+          ": " ++
+          intervals
+          ->List.reduce("", (acc, interval) => acc ++ interval->Interval.to_string ++ " > ")
+          ->Js.String2.slice(~from=0, ~to_=-3),
+        )
+      }
+    | Relative(intervals) =>
+      switch intervals {
+      | list{Third(Major), Third(Minor)} => Result.Ok(MajorTriad)
+      | list{Third(Minor), Third(Major)} => Result.Ok(MinorTriad)
+      | _ =>
+        Result.Error(
+          "Could not find the matching chord for intervals" ++
+          ": " ++
+          intervals
+          ->List.reduce("", (acc, interval) => acc ++ interval->Interval.to_string ++ " > ")
+          ->Js.String2.slice(~from=0, ~to_=-3),
+        )
+      }
+    }
 }
 
-open Chord
-
 module Scale = {
+  open Interval
+  open Intervals
+
   type t =
     | MajorScale
     | NaturalMinorScale
@@ -584,8 +658,10 @@ module Scale = {
     | 0 => intervals
     | _ =>
       switch intervals {
-      | list{} => list{}
-      | list{head, ...tail} => get_nth_mode(tail->List.concat(list{head}), n - 1)
+      | Relative(list{}) => Relative(list{})
+      | Relative(list{head, ...tail}) =>
+        get_nth_mode(Relative(tail->List.concat(list{head})), n - 1)
+      | _ => Relative(list{})
       }
     }
   }
@@ -593,7 +669,7 @@ module Scale = {
   let rec relativeIntervals_of_scale = scale =>
     switch scale {
     | MajorScale =>
-      list{
+      Relative(list{
         Major->Second,
         Major->Second,
         Minor->Second,
@@ -601,7 +677,7 @@ module Scale = {
         Major->Second,
         Major->Second,
         Minor->Second,
-      }
+      })
     | IonianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(0)
     | DorianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(1)
     | PhrygianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(2)
@@ -610,7 +686,7 @@ module Scale = {
     | AeolianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(5)
     | IocrianMode => MajorScale->relativeIntervals_of_scale->get_nth_mode(6)
     | NaturalMinorScale =>
-      list{
+      Relative(list{
         Major->Second,
         Minor->Second,
         Major->Second,
@@ -618,9 +694,9 @@ module Scale = {
         Minor->Second,
         Major->Second,
         Major->Second,
-      }
+      })
     | HarmonicMinorScale =>
-      list{
+      Relative(list{
         Major->Second,
         Minor->Second,
         Major->Second,
@@ -628,10 +704,10 @@ module Scale = {
         Minor->Second,
         Augmented->Second,
         Minor->Second,
-      }
+      })
     }
 
-  let buildScale = (root, scale) => root->stackIntervalsRelatively(scale->relativeIntervals_of_scale)
+  let buildScale = (root, scale) => root->to_notes(scale->relativeIntervals_of_scale)
 
   let string_of_intervals = intervals => {
     "root" ++
@@ -639,32 +715,9 @@ module Scale = {
   }
 }
 
-
-let chord_of_absoluteIntervals = intervals =>
-  switch intervals {
-  | list{Third(Minor), Fifth(Perfect)} => Result.Ok(MinorTriad)
-  | list{Third(Major), Fifth(Perfect)} => Result.Ok(MajorTriad)
-  | list{Third(Minor), Fifth(Diminished)} => Result.Ok(DiminishedTriad)
-  | list{Third(Major), Fifth(Augmented)} => Result.Ok(AugmentedTriad)
-  | list{Third(Minor), Fifth(Perfect), Seventh(Minor)} => Result.Ok(MinorSeventh)
-  | list{Third(Major), Fifth(Perfect), Seventh(Major)} => Result.Ok(MajorSeventh)
-  | list{Third(Minor), Fifth(Diminished), Seventh(Minor)} => Result.Ok(HalfDiminishedSeventh)
-  | list{Third(Major), Fifth(Perfect), Seventh(Minor)} => Result.Ok(DominanteSeventh)
-  | list{Third(Minor), Fifth(Diminished), Seventh(Diminished)} => Result.Ok(DiminishedSeventh)
-  | list{Third(Major), Fifth(Augmented), Seventh(Major)} => Result.Ok(AugmentedMajorSeventh)
-  | list{Third(Minor), Fifth(Perfect), Seventh(Major)} => Result.Ok(MinorSeventhMajor)
-  | _ =>
-    Result.Error(
-      "Could not find the matching chord for intervals" ++
-      ": " ++
-      intervals
-      ->List.reduce("", (acc, interval) => acc ++ interval->Interval.to_string ++ " > ")
-      ->Js.String2.slice(~from=0, ~to_=-3),
-    )
-  }
-
 module Harmonization = {
   open Scale
+  open Chord
 
   let rec transpose = l =>
     switch l {
@@ -678,12 +731,24 @@ module Harmonization = {
 
   // see https://www.bluesguitarinstitute.com/how-to-harmonize-a-scale/
   let get_harmonization_matrix = scale => {
-    let scale_intervals = scale->relativeIntervals_of_scale
-    scale_intervals->List.mapWithIndex((i, _) => scale_intervals->get_nth_mode(i))
+    let intervals = scale->relativeIntervals_of_scale
+    intervals->Intervals.to_list->List.mapWithIndex((i, _) => intervals->get_nth_mode(i))
+  }
+
+  let transpose_harmonization_matrix = matrix => {
+    matrix
+    ->List.reduceReverse(Result.Ok(list{}), (acc, intervals) => {
+      switch intervals {
+      | Intervals.Absolute(_) => Result.Error("Only relative intervals are supported")
+      | Relative(intervals) => acc->Result.map(acc => list{intervals, ...acc})
+      }
+    })
+    ->Result.map(matrix => matrix->transpose->List.map(intervals => Intervals.Relative(intervals)))
   }
 
   let print_matrix = matrix => {
-    let string_of_row = row => row->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " ")
+    let string_of_row = row =>
+      row->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ " ")
 
     matrix->List.reduce("", (acc, row) => acc ++ row->string_of_row ++ "\n")
   }
@@ -696,13 +761,13 @@ module Harmonization = {
       }
     })
 
-  let absoluteIntervals_of_relativeIntervals = relativeIntervals => {
+  let to_absolute = relativeIntervals => {
     let rec f = relativeIntervals =>
       switch relativeIntervals {
       | list{} => Result.Ok(list{})
       | list{_} => Result.Ok(list{})
       | list{first, second, ...tail} =>
-        addIntervals(first, second)->Result.flatMap(absoluteInterval => {
+        Interval.addIntervals(first, second)->Result.flatMap(absoluteInterval => {
           f(list{absoluteInterval, ...tail})->Result.map(absoluteIntervals => list{
             absoluteInterval,
             ...absoluteIntervals,
@@ -710,28 +775,40 @@ module Harmonization = {
         })
       }
     switch relativeIntervals {
-    | list{} => Result.Ok(list{})
-    | list{interval} => Result.Ok(list{interval})
-    | list{first, ..._} => f(relativeIntervals)->Result.map(intervals => list{first, ...intervals})
+    | Intervals.Relative(relativeIntervals) =>
+      let absoluteIntervals = switch relativeIntervals {
+      | list{} => Result.Ok(list{})
+      | list{interval} => Result.Ok(list{interval})
+      | list{first, ..._} =>
+        f(relativeIntervals)->Result.map(intervals => list{first, ...intervals})
+      }
+      absoluteIntervals->Result.map(intervals => Intervals.Absolute(intervals))
+    | Absolute(intervals) => Result.Ok(Absolute(intervals))
     }
   }
 
   let chords_of_scale = (scale, spec) => {
     scale
     ->get_harmonization_matrix
-    ->transpose
-    ->List.reduce(Result.Ok(list{}), (acc, scale_intervals) => {
-      let intervals =
-        scale_intervals
-        ->absoluteIntervals_of_relativeIntervals
-        ->Result.map(intervals => intervals->filter_list_by_indexes(spec))
+    ->transpose_harmonization_matrix
+    ->Result.flatMap(matrix =>
+      matrix
+      ->List.reduce(Result.Ok(list{}), (acc, scale_intervals) => {
+        let intervals =
+          scale_intervals
+          ->to_absolute
+          ->Result.map(
+            intervals =>
+              intervals->Intervals.map(intervals => intervals->filter_list_by_indexes(spec)),
+          )
 
-      switch intervals->Result.flatMap(intervals => intervals->chord_of_absoluteIntervals) {
-      | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
-      | Result.Error(msg) => Result.Error(msg)
-      }
-    })
-    ->Result.map(List.reverse)
+        switch intervals->Result.flatMap(intervals => intervals->chord_of_absoluteIntervals) {
+        | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
+        | Result.Error(msg) => Result.Error(msg)
+        }
+      })
+      ->Result.map(List.reverse)
+    )
   }
 
   let triads_of_scale = scale => scale->chords_of_scale([1, 3]->Set.Int.fromArray)
@@ -754,6 +831,5 @@ module Harmonization = {
   let harmonize_scale_with_tetrads = (scale, root) => harmonize_scale(scale, root, [1, 3, 5])
 }
 
-
-
-let string_of_progression = p => p->List.reduce("", (acc, h) => acc ++ h->Notes.string_of_notes ++ " | ")
+let string_of_progression = p =>
+  p->List.reduce("", (acc, h) => acc ++ h->Notes.string_of_notes ++ " | ")

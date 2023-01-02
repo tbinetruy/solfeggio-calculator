@@ -4,6 +4,7 @@ open Theory.Scale
 open Theory.Harmonization
 open Theory.Notes
 open Theory.Note
+open Theory.Intervals
 open Fretboard.Tunning
 
 module StringMap = Map.Make({
@@ -46,7 +47,7 @@ let make = () => {
   let (tunning, setTunning) = React.useState(() => Standard)
   let root = rootPitchClass->Note.setAccidental(accidental)
 
-  let buildInterval = Interval.buildInterval
+  let buildInterval = Intervals.buildInterval
   let notes = switch (intervalType, chordType, scaleType) {
   | (Some(intervalType), Some(_), Some(_)) => root->buildInterval(intervalType)
   | (Some(intervalType), None, Some(_)) => root->buildInterval(intervalType)
@@ -226,8 +227,8 @@ let make = () => {
     <div> {React.string(harmonization_tetrads)} </div>
     <div> {React.string("----")} </div>
     <div> {React.string(notes->string_of_notes)} </div>
-    <div> {React.string(notes->relativeIntervals_of_notes(list{})->string_of_intervals)} </div>
-    <div> {React.string(notes->absoluteIntervals_of_notes(list{})->string_of_intervals)} </div>
+    <div> {React.string(notes->relativeIntervals_of_notes->Intervals.string_of_intervals)} </div>
+    <div> {React.string(notes->absoluteIntervals_of_notes->Intervals.string_of_intervals)} </div>
     <Fretboard notes tunning />
   </div>
 }

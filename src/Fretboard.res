@@ -100,7 +100,7 @@ module String = {
           {switch note {
           | Some(n) =>
             tonic
-            ->Interval.interval_of_notes(n)
+            ->Interval.from_notes(n)
             ->Result.mapWithDefault(
               <div> {React.string("error")} </div>,
               i => {

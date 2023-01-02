@@ -1,10 +1,9 @@
 open Theory
+open Theory.Note
 open Theory.Chord
 open Theory.Scale
 open Theory.Harmonization
 open Theory.Notes
-open Theory.Note
-open Theory.Intervals
 open Fretboard.Tunning
 
 module StringMap = Map.Make({
@@ -47,42 +46,42 @@ let make = () => {
   let (tunning, setTunning) = React.useState(() => Standard)
   let root = rootPitchClass->Note.setAccidental(accidental)
 
-  let buildInterval = Intervals.buildInterval
+  let buildInterval = Interval.to_notes
   let notes = switch (intervalType, chordType, scaleType) {
   | (Some(intervalType), Some(_), Some(_)) => root->buildInterval(intervalType)
   | (Some(intervalType), None, Some(_)) => root->buildInterval(intervalType)
   | (Some(intervalType), Some(_), None) => root->buildInterval(intervalType)
   | (Some(intervalType), None, None) => root->buildInterval(intervalType)
-  | (None, Some(chordType), Some(_)) => root->buildChord(chordType)
-  | (None, Some(chordType), None) => root->buildChord(chordType)
-  | (None, None, Some(scaleType)) => root->buildScale(scaleType)
+  | (None, Some(chordType), Some(_)) => root->Chord.to_notes(chordType)
+  | (None, Some(chordType), None) => root->Chord.to_notes(chordType)
+  | (None, None, Some(scaleType)) => root->Scale.to_notes(scaleType)
   | (None, None, None) => list{}
   }
 
   let harmonization_triad_chords = scaleType->Option.mapWithDefault("", scale =>
-    switch scale->triads_of_scale {
-    | Result.Ok(chords) => chords->string_of_chords
+    switch scale->Harmonization.to_triads {
+    | Result.Ok(chords) => chords->Chords.to_string
     | Result.Error(msg) => msg
     }
   )
 
   let harmonization_triads = scaleType->Option.mapWithDefault("", scale =>
-    switch scale->harmonize_scale_with_triads(root) {
-    | Result.Ok(harmonization) => harmonization->string_of_progression
+    switch scale->to_triad_progression(root) {
+    | Result.Ok(harmonization) => harmonization->Progression.to_string
     | Result.Error(msg) => msg
     }
   )
 
   let harmonization_tetrad_chords = scaleType->Option.mapWithDefault("", scale =>
-    switch scale->tetrads_of_scale {
-    | Result.Ok(chords) => chords->string_of_chords
+    switch scale->Harmonization.to_tetrads {
+    | Result.Ok(chords) => chords->Chords.to_string
     | Result.Error(msg) => msg
     }
   )
 
   let harmonization_tetrads = scaleType->Option.mapWithDefault("", scale =>
-    switch scale->harmonize_scale_with_tetrads(root) {
-    | Result.Ok(harmonization) => harmonization->string_of_progression
+    switch scale->Harmonization.to_tetrad_progression(root) {
+    | Result.Ok(harmonization) => harmonization->Progression.to_string
     | Result.Error(msg) => msg
     }
   )
@@ -120,7 +119,7 @@ let make = () => {
       A(Natural),
       B(Natural),
     ]->Array.reduce(StringMap.empty, (acc, el) =>
-      acc |> StringMap.add(el->to_string, () => setRootPitchClass(_ => el))
+      acc |> StringMap.add(el->Note.to_string, () => setRootPitchClass(_ => el))
     )
 
   let accidentalSpec =
@@ -185,7 +184,7 @@ let make = () => {
     ->Array.map(el => Some(el))
     ->Array.concat([None])
     ->Array.reduceU(StringMap.empty, (. acc, el) =>
-      acc |> StringMap.add(el->Option.mapWithDefault("None", string_of_chord), () =>
+      acc |> StringMap.add(el->Option.mapWithDefault("None", Chord.to_string), () =>
         setChordType(_ => el)
       )
     )
@@ -218,7 +217,7 @@ let make = () => {
     <Select
       spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", Interval.to_string)}
     />
-    <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", string_of_chord)} />
+    <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", Chord.to_string)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
     <div> {React.string(harmonization_triad_chords)} </div>
     <div> {React.string(harmonization_triads)} </div>
@@ -227,8 +226,8 @@ let make = () => {
     <div> {React.string(harmonization_tetrads)} </div>
     <div> {React.string("----")} </div>
     <div> {React.string(notes->string_of_notes)} </div>
-    <div> {React.string(notes->relativeIntervals_of_notes->Intervals.string_of_intervals)} </div>
-    <div> {React.string(notes->absoluteIntervals_of_notes->Intervals.string_of_intervals)} </div>
+    <div> {React.string(notes->Intervals.relativeIntervals_of_notes->Intervals.to_string)} </div>
+    <div> {React.string(notes->Intervals.absoluteIntervals_of_notes->Intervals.to_string)} </div>
     <Fretboard notes tunning />
   </div>
 }

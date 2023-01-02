@@ -54,14 +54,28 @@ let make = () => {
   | (None, None, None) => list{}
   }
 
-  let harmonization_chords = scaleType->Option.mapWithDefault("", scale =>
+  let harmonization_triad_chords = scaleType->Option.mapWithDefault("", scale =>
+    switch scale->triads_of_scale {
+    | Result.Ok(chords) => chords->string_of_chords
+    | Result.Error(msg) => msg
+    }
+  )
+
+  let harmonization_triads = scaleType->Option.mapWithDefault("", scale =>
+    switch scale->harmonize_scale_with_triads(root) {
+    | Result.Ok(harmonization) => harmonization->string_of_progression
+    | Result.Error(msg) => msg
+    }
+  )
+
+  let harmonization_tetrad_chords = scaleType->Option.mapWithDefault("", scale =>
     switch scale->tetrads_of_scale {
     | Result.Ok(chords) => chords->string_of_chords
     | Result.Error(msg) => msg
     }
   )
 
-  let harmonization = scaleType->Option.mapWithDefault("", scale =>
+  let harmonization_tetrads = scaleType->Option.mapWithDefault("", scale =>
     switch scale->harmonize_scale_with_tetrads(root) {
     | Result.Ok(harmonization) => harmonization->string_of_progression
     | Result.Error(msg) => msg
@@ -201,8 +215,12 @@ let make = () => {
     />
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", string_of_chord)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
-    <div> {React.string(harmonization_chords)} </div>
-    <div> {React.string(harmonization)} </div>
+    <div> {React.string(harmonization_triad_chords)} </div>
+    <div> {React.string(harmonization_triads)} </div>
+    <div> {React.string("----")} </div>
+    <div> {React.string(harmonization_tetrad_chords)} </div>
+    <div> {React.string(harmonization_tetrads)} </div>
+    <div> {React.string("----")} </div>
     <div> {React.string(notes->string_of_notes)} </div>
     <div> {React.string(notes->relativeIntervals_of_notes(list{})->string_of_intervals)} </div>
     <div> {React.string(notes->absoluteIntervals_of_notes(list{})->string_of_intervals)} </div>

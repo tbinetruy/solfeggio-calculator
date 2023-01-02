@@ -4,6 +4,7 @@
   "scripts": {
     "start": "vite",
     "test": "jest",
+    "vite:build": "vite build",
     "res:build": "rescript",
     "res:clean": "rescript clean",
     "res:start": "rescript build -w",

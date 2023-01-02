@@ -474,7 +474,9 @@ let string_of_chord = chord =>
   }
 
 let string_of_chords = chords =>
-    chords->List.reduce("", (acc, chord) => acc ++ chord->string_of_chord ++ " | ")->Js.String2.slice(~from=0, ~to_=-3)
+  chords
+  ->List.reduce("", (acc, chord) => acc ++ chord->string_of_chord ++ " | ")
+  ->Js.String2.slice(~from=0, ~to_=-3)
 
 let buildChord = (root, chord) =>
   switch chord {
@@ -721,23 +723,19 @@ let triads_of_scale = scale => scale->chords_of_scale([1, 3]->Set.Int.fromArray)
 
 let tetrads_of_scale = scale => scale->chords_of_scale([1, 3, 5]->Set.Int.fromArray)
 
-
 let harmonize_scale = (scale, root, spec) => {
   let scale_notes = root->buildScale(scale)
   let scale_chords = scale->chords_of_scale(spec->Set.Int.fromArray)
   let rec f = arg =>
     switch arg {
-      | list{(root, chord), ...tail} => list{root->buildChord(chord), ...f(tail)}
-      | list{} => list{}
+    | list{(root, chord), ...tail} => list{root->buildChord(chord), ...f(tail)}
+    | list{} => list{}
     }
   scale_chords->Result.map(scale_chords => f(List.zip(scale_notes, scale_chords)))
 }
 
-let harmonize_scale_with_triads = (scale, root) =>
-    harmonize_scale(scale, root, [1, 3])
+let harmonize_scale_with_triads = (scale, root) => harmonize_scale(scale, root, [1, 3])
 
-let harmonize_scale_with_tetrads = (scale, root) =>
-    harmonize_scale(scale, root, [1, 3, 5])
+let harmonize_scale_with_tetrads = (scale, root) => harmonize_scale(scale, root, [1, 3, 5])
 
-let string_of_progression = p =>
-  p->List.reduce("", (acc, h) => acc ++ h->string_of_notes ++ " | ")
+let string_of_progression = p => p->List.reduce("", (acc, h) => acc ++ h->string_of_notes ++ " | ")

@@ -1,5 +1,9 @@
 open Theory
-open Note
+open Theory.Chord
+open Theory.Scale
+open Theory.Harmonization
+open Theory.Notes
+open Theory.Note
 open Fretboard.Tunning
 
 module StringMap = Map.Make({

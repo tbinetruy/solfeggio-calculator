@@ -1,6 +1,10 @@
 open Theory
+open Theory.Harmonization
 open Theory.Interval
 open Theory.Note
+open Theory.Notes
+open Theory.Chord
+open Theory.Scale
 open Jest
 open Belt
 

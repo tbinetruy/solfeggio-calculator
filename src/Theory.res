@@ -120,12 +120,10 @@ module Notes = {
     ->Js.String2.slice(~from=0, ~to_=-2)
 }
 
-
 module Progression = {
   type t = list<list<Note.t>>
 
-  let to_string = p =>
-    p->List.reduce("", (acc, h) => acc ++ h->Notes.string_of_notes ++ " | ")
+  let to_string = p => p->List.reduce("", (acc, h) => acc ++ h->Notes.string_of_notes ++ " | ")
 }
 
 type semitone = int
@@ -826,4 +824,3 @@ module Chords = {
     ->List.reduce("", (acc, chord) => acc ++ chord->Chord.to_string ++ " | ")
     ->Js.String2.slice(~from=0, ~to_=-3)
 }
-

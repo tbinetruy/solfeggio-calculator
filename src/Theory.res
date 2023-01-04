@@ -763,12 +763,7 @@ module Harmonization = {
   }
 
   let filter_list_by_indexes = (notes, indexes) =>
-    notes->List.reduceWithIndex(list{}, (acc, note, i) => {
-      switch indexes->Set.Int.has(i) {
-      | true => acc->List.concat(list{note})
-      | false => acc
-      }
-    })
+    notes->List.keepWithIndex((_, i) => indexes->Set.Int.has(i))
 
   let to_chords = (scale, chord_degrees, scale_degrees) => {
     scale

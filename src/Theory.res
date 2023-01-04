@@ -487,6 +487,32 @@ module Intervals = {
     ->to_list
     ->List.reduce("", (acc, interval) => acc ++ interval->Interval.to_string ++ " > ")
     ->Js.String2.slice(~from=0, ~to_=-3)
+
+  let to_absolute = relativeIntervals => {
+    let rec f = relativeIntervals =>
+      switch relativeIntervals {
+      | list{} => Result.Ok(list{})
+      | list{_} => Result.Ok(list{})
+      | list{first, second, ...tail} =>
+        Interval.addIntervals(first, second)->Result.flatMap(absoluteInterval => {
+          f(list{absoluteInterval, ...tail})->Result.map(absoluteIntervals => list{
+            absoluteInterval,
+            ...absoluteIntervals,
+          })
+        })
+      }
+    switch relativeIntervals {
+    | Relative(relativeIntervals) =>
+      let absoluteIntervals = switch relativeIntervals {
+      | list{} => Result.Ok(list{})
+      | list{interval} => Result.Ok(list{interval})
+      | list{first, ..._} =>
+        f(relativeIntervals)->Result.map(intervals => list{first, ...intervals})
+      }
+      absoluteIntervals->Result.map(intervals => Absolute(intervals))
+    | Absolute(intervals) => Result.Ok(Absolute(intervals))
+    }
+  }
 }
 
 module Chord = {
@@ -744,32 +770,6 @@ module Harmonization = {
       }
     })
 
-  let to_absolute = relativeIntervals => {
-    let rec f = relativeIntervals =>
-      switch relativeIntervals {
-      | list{} => Result.Ok(list{})
-      | list{_} => Result.Ok(list{})
-      | list{first, second, ...tail} =>
-        Interval.addIntervals(first, second)->Result.flatMap(absoluteInterval => {
-          f(list{absoluteInterval, ...tail})->Result.map(absoluteIntervals => list{
-            absoluteInterval,
-            ...absoluteIntervals,
-          })
-        })
-      }
-    switch relativeIntervals {
-    | Intervals.Relative(relativeIntervals) =>
-      let absoluteIntervals = switch relativeIntervals {
-      | list{} => Result.Ok(list{})
-      | list{interval} => Result.Ok(list{interval})
-      | list{first, ..._} =>
-        f(relativeIntervals)->Result.map(intervals => list{first, ...intervals})
-      }
-      absoluteIntervals->Result.map(intervals => Intervals.Absolute(intervals))
-    | Absolute(intervals) => Result.Ok(Absolute(intervals))
-    }
-  }
-
   let to_chords = (scale, chord_degrees, scale_degrees) => {
     scale
     ->get_harmonization_matrix
@@ -780,7 +780,7 @@ module Harmonization = {
       ->List.reduceReverse(Result.Ok(list{}), (acc, scale_intervals) => {
         let intervals =
           scale_intervals
-          ->to_absolute
+          ->Intervals.to_absolute
           ->Result.map(
             intervals =>
               intervals->Intervals.map(

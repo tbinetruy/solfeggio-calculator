@@ -794,8 +794,10 @@ module Harmonization = {
   let to_progression = (scale, root, chord_degrees, scale_degrees) => {
     let scale_notes = root->Scale.to_notes(scale)
     let scale_chords = scale->to_chords(chord_degrees, scale_degrees)
-    let f = ((root, chord)) => root->Chord.to_notes(chord)
-    scale_chords->Result.map(scale_chords => List.zip(scale_notes, scale_chords)->List.map(f))
+    let to_notes = ((root, chord)) => root->Chord.to_notes(chord)
+    scale_chords->Result.map(scale_chords =>
+      List.zip(scale_notes, scale_chords)->List.map(to_notes)
+    )
   }
 
   let triad_degrees = [1, 3]->Set.Int.fromArray

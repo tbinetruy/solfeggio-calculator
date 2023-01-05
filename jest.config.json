@@ -2,5 +2,6 @@
   "transform": {
     "^.+\\.jsx?$": "esbuild-jest"
   },
-  "transformIgnorePatterns": ["<rootDir>/node_modules/(?!(rescript|@glennsl/rescript-jest)/)"]
+  "transformIgnorePatterns": ["<rootDir>/node_modules/(?!(rescript|@glennsl/rescript-jest)/)"],
+  "testEnvironment": "jsdom"
 }

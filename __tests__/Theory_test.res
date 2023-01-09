@@ -202,45 +202,45 @@ describe("chord_of_intervals", () => {
   open Intervals
 
   test("minor triad", () =>
-    expect(Absolute(list{Minor->Third, Perfect->Fifth})->to_chord)->toEqual(Result.Ok(MinorTriad))
+    expect(Absolute(list{Minor->Third, Perfect->Fifth})->from_intervals)->toEqual(Result.Ok(MinorTriad))
   )
 
   test("major triad", () =>
-    expect(Absolute(list{Major->Third, Perfect->Fifth})->to_chord)->toEqual(Result.Ok(MajorTriad))
+    expect(Absolute(list{Major->Third, Perfect->Fifth})->from_intervals)->toEqual(Result.Ok(MajorTriad))
   )
 
   test("diminished triad", () =>
-    expect(Absolute(list{Minor->Third, Diminished->Fifth})->to_chord)->toEqual(
+    expect(Absolute(list{Minor->Third, Diminished->Fifth})->from_intervals)->toEqual(
       Result.Ok(DiminishedTriad),
     )
   )
 
   test("minor seventh", () =>
-    expect(Absolute(list{Minor->Third, Perfect->Fifth, Minor->Seventh})->to_chord)->toEqual(
+    expect(Absolute(list{Minor->Third, Perfect->Fifth, Minor->Seventh})->from_intervals)->toEqual(
       Result.Ok(MinorSeventh),
     )
   )
 
   test("major seventh", () =>
-    expect(Absolute(list{Major->Third, Perfect->Fifth, Major->Seventh})->to_chord)->toEqual(
+    expect(Absolute(list{Major->Third, Perfect->Fifth, Major->Seventh})->from_intervals)->toEqual(
       Result.Ok(MajorSeventh),
     )
   )
 
   test("half diminished seventh", () =>
-    expect(Absolute(list{Minor->Third, Diminished->Fifth, Minor->Seventh})->to_chord)->toEqual(
+    expect(Absolute(list{Minor->Third, Diminished->Fifth, Minor->Seventh})->from_intervals)->toEqual(
       Result.Ok(HalfDiminishedSeventh),
     )
   )
 
   test("diminished seventh", () =>
-    expect(Absolute(list{Minor->Third, Diminished->Fifth, Diminished->Seventh})->to_chord)->toEqual(
+    expect(Absolute(list{Minor->Third, Diminished->Fifth, Diminished->Seventh})->from_intervals)->toEqual(
       Result.Ok(DiminishedSeventh),
     )
   )
 
   test("dominant seventh", () =>
-    expect(Absolute(list{Major->Third, Perfect->Fifth, Minor->Seventh})->to_chord)->toEqual(
+    expect(Absolute(list{Major->Third, Perfect->Fifth, Minor->Seventh})->from_intervals)->toEqual(
       Result.Ok(DominanteSeventh),
     )
   )

@@ -594,7 +594,7 @@ module Chord = {
 
   let to_notes = (root, chord) => root->Intervals.to_notes(chord->to_intervals)
 
-  let to_chord = intervals =>
+  let from_intervals = intervals =>
     switch intervals {
     | Intervals.Absolute(intervals) =>
       switch intervals {
@@ -796,7 +796,7 @@ module Harmonization = {
                   ),
               )
 
-            switch intervals->Result.flatMap(intervals => intervals->Chord.to_chord) {
+            switch intervals->Result.flatMap(intervals => intervals->Chord.from_intervals) {
             | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
             | Result.Error(msg) => Result.Error(msg)
             }

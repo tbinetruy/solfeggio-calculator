@@ -36,6 +36,24 @@ module Select = {
   }
 }
 
+module AnnotatedFretboard = {
+  @react.component
+  let make = (~notes, ~tunning) => {
+    let chord_name =
+      notes
+      ->Intervals.absoluteIntervals_of_notes
+      ->Chord.from_intervals
+      ->Result.mapWithDefault("", chord => " (" ++ chord->Chord.to_string ++ ")")
+
+    <div>
+      <div> {React.string(notes->string_of_notes ++ chord_name)} </div>
+      <div> {React.string(notes->Intervals.relativeIntervals_of_notes->Intervals.to_string)} </div>
+      <div> {React.string(notes->Intervals.absoluteIntervals_of_notes->Intervals.to_string)} </div>
+      <Fretboard notes tunning />
+    </div>
+  }
+}
+
 @react.component
 let make = () => {
   let (rootPitchClass, setRootPitchClass) = React.useState(() => C(Accidental.Natural))
@@ -211,11 +229,9 @@ let make = () => {
       )
     )
 
-
-  let string_of_progressionType = (degreeNumbers) =>
-    degreeNumbers->Array.reduce(
-      "",
-      (acc, degreeNumber) => acc ++ (degreeNumber + 1)->Int.toString ++ " ",
+  let string_of_progressionType = degreeNumbers =>
+    degreeNumbers->Array.reduce("", (acc, degreeNumber) =>
+      acc ++ (degreeNumber + 1)->Int.toString ++ " "
     )
 
   let progressionTypeSpec =
@@ -234,13 +250,16 @@ let make = () => {
 
   let progression =
     switch (scaleType, progressionType) {
-      | (Some(scale), Some(progression_degrees)) =>
-        to_progression(scale, root, triad_degrees, progression_degrees)
-        ->Result.map(el => {Js.Console.log((el, "foo")); el})
-        ->Result.getWithDefault(list{list{}})
-      | _ => list{}
+    | (Some(scale), Some(progression_degrees)) =>
+      to_progression(
+        scale,
+        root,
+        tetrad_degrees,
+        progression_degrees,
+      )->Result.getWithDefault(list{})
+    | _ => list{}
     }
-    ->List.mapWithIndex((i, notes) => <Fretboard key={i->Int.toString} notes tunning />)
+    ->List.mapWithIndex((i, notes) => <AnnotatedFretboard key={i->Int.toString} notes tunning />)
     ->List.toArray
     ->React.array
 
@@ -254,7 +273,8 @@ let make = () => {
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", Chord.to_string)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
     <Select
-      spec=progressionTypeSpec value={progressionType->Option.mapWithDefault("None", el => el->string_of_progressionType)}
+      spec=progressionTypeSpec
+      value={progressionType->Option.mapWithDefault("None", el => el->string_of_progressionType)}
     />
     <div> {React.string(harmonization_triad_chords)} </div>
     <div> {React.string(harmonization_triads)} </div>
@@ -262,12 +282,7 @@ let make = () => {
     <div> {React.string(harmonization_tetrad_chords)} </div>
     <div> {React.string(harmonization_tetrads)} </div>
     <div> {React.string("----")} </div>
-    <div> {React.string(notes->string_of_notes)} </div>
-    <div> {React.string(notes->Intervals.relativeIntervals_of_notes->Intervals.to_string)} </div>
-    <div> {React.string(notes->Intervals.absoluteIntervals_of_notes->Intervals.to_string)} </div>
-    <Fretboard notes tunning />
-
-    { progression }
-
+    <AnnotatedFretboard notes tunning />
+    {progression}
   </div>
 }

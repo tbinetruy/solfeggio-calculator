@@ -765,44 +765,62 @@ module Harmonization = {
   let filter_list_by_indexes = (notes, indexes) =>
     notes->List.keepWithIndex((_, i) => indexes->Set.Int.has(i))
 
-  let to_chords = (scale, chord_degrees, scale_degrees) => {
+  let filter_and_maintain_order = (l, indexes) =>
+    indexes->Array.reduceReverse(Result.Ok(list{}), (acc, scale_degree) =>
+      acc->Result.flatMap(acc =>
+        switch l->List.get(scale_degree) {
+        | Some(chord) => Result.Ok(list{chord, ...acc})
+        | None => Result.Error("scale degree not found")
+        }
+      )
+    )
+
+  let to_chords = (scale, chord_degrees, scale_degrees: array<int>) => {
     scale
     ->get_harmonization_matrix
     ->transpose_harmonization_matrix
     ->Result.flatMap(matrix =>
       matrix
-      ->List.keepWithIndex((_, scale_degree) => scale_degrees->Set.Int.has(scale_degree))
-      ->List.reduceReverse(Result.Ok(list{}), (acc, scale_intervals) => {
-        let intervals =
-          scale_intervals
-          ->Intervals.to_absolute
-          ->Result.map(
-            intervals =>
-              intervals->Intervals.map(
-                intervals => intervals->filter_list_by_indexes(chord_degrees),
-              ),
-          )
+      ->filter_and_maintain_order(scale_degrees)
+      ->Result.flatMap(chords =>
+        chords->List.reduceReverse(
+          Result.Ok(list{}),
+          (acc, scale_intervals) => {
+            let intervals =
+              scale_intervals
+              ->Intervals.to_absolute
+              ->Result.map(
+                intervals =>
+                  intervals->Intervals.map(
+                    intervals => intervals->filter_list_by_indexes(chord_degrees),
+                  ),
+              )
 
-        switch intervals->Result.flatMap(intervals => intervals->Chord.to_chord) {
-        | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
-        | Result.Error(msg) => Result.Error(msg)
-        }
-      })
+            switch intervals->Result.flatMap(intervals => intervals->Chord.to_chord) {
+            | Result.Ok(chord) => acc->Result.map(acc => list{chord, ...acc})
+            | Result.Error(msg) => Result.Error(msg)
+            }
+          },
+        )
+      )
     )
   }
 
   let to_progression = (scale, root, chord_degrees, scale_degrees) => {
-    let scale_notes = root->Scale.to_notes(scale)
+    let scale_notes = root->Scale.to_notes(scale)->filter_and_maintain_order(scale_degrees)
     let scale_chords = scale->to_chords(chord_degrees, scale_degrees)
     let to_notes = ((root, chord)) => root->Chord.to_notes(chord)
-    scale_chords->Result.map(scale_chords =>
-      List.zip(scale_notes, scale_chords)->List.map(to_notes)
-    )
+    switch (scale_notes, scale_chords) {
+    | (Result.Ok(scale_notes), Result.Ok(scale_chords)) =>
+      List.zip(scale_notes, scale_chords)->List.map(to_notes)->Result.Ok
+    | (Result.Error(msg), _) => Result.Error(msg)
+    | (_, Result.Error(msg)) => Result.Error(msg)
+    }
   }
 
   let triad_degrees = [1, 3]->Set.Int.fromArray
   let tetrad_degrees = [1, 3, 5]->Set.Int.fromArray
-  let scale_harmonization_degrees = [0, 1, 2, 3, 4, 5, 6]->Set.Int.fromArray
+  let scale_harmonization_degrees = [0, 1, 2, 3, 4, 5, 6]
 
   let to_triads = scale => scale->to_chords(triad_degrees, scale_harmonization_degrees)
   let to_tetrads = scale => scale->to_chords(tetrad_degrees, scale_harmonization_degrees)

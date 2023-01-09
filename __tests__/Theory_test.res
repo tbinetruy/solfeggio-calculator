@@ -388,3 +388,32 @@ describe("harmonize scale", () => {
     expect(scale_harmonization)->toEqual(expected)
   })
 })
+
+
+describe("scale progression", () => {
+  open Expect
+
+  test("2 5 1 chord types", () => {
+    let progression = HarmonicMinorScale->Harmonization.to_chords(Harmonization.tetrad_degrees, [1, 4, 0])
+
+    let expected =
+      Result.Ok(list{
+        HalfDiminishedSeventh,
+        DominanteSeventh,
+        MinorSeventhMajor,
+      })
+    expect(progression)->toEqual(expected)
+  })
+
+  test("2 5 1 chord notes", () => {
+    let progression = HarmonicMinorScale->Harmonization.to_progression(C(Natural), Harmonization.tetrad_degrees, [1, 4, 0])
+
+    let expected =
+      Result.Ok(list{
+        D(Natural)->Chord.to_notes(HalfDiminishedSeventh),
+        G(Natural)->Chord.to_notes(DominanteSeventh),
+        C(Natural)->Chord.to_notes(MinorSeventhMajor),
+      })
+    expect(progression)->toEqual(expected)
+  })
+})

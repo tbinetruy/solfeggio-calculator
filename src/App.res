@@ -43,6 +43,7 @@ let make = () => {
   let (chordType, _setChordType) = React.useState(() => Some(MajorSeventh))
   let (scaleType, _setScaleType) = React.useState(() => None)
   let (intervalType, _setIntervalType) = React.useState(() => None)
+  let (progressionType, _setProgressionType) = React.useState(() => None)
   let (tunning, setTunning) = React.useState(() => Standard)
   let root = rootPitchClass->Note.setAccidental(accidental)
 
@@ -210,6 +211,39 @@ let make = () => {
       )
     )
 
+
+  let string_of_progressionType = (degreeNumbers) =>
+    degreeNumbers->Array.reduce(
+      "",
+      (acc, degreeNumber) => acc ++ (degreeNumber + 1)->Int.toString ++ " ",
+    )
+
+  let progressionTypeSpec =
+    [[1, 4, 0]]
+    ->Array.map(el => Some(el))
+    ->Array.concat([None])
+    ->Array.reduceU(StringMap.empty, (. acc, el) =>
+      acc |> StringMap.add(
+        el->Option.mapWithDefault(
+          "None",
+          degreeNumbers => degreeNumbers->string_of_progressionType,
+        ),
+        () => _setProgressionType(_ => el),
+      )
+    )
+
+  let progression =
+    switch (scaleType, progressionType) {
+      | (Some(scale), Some(progression_degrees)) =>
+        to_progression(scale, root, triad_degrees, progression_degrees)
+        ->Result.map(el => {Js.Console.log((el, "foo")); el})
+        ->Result.getWithDefault(list{list{}})
+      | _ => list{}
+    }
+    ->List.mapWithIndex((i, notes) => <Fretboard key={i->Int.toString} notes tunning />)
+    ->List.toArray
+    ->React.array
+
   <div>
     <Select spec=tunningSpec value={tunning->string_of_tunning} />
     <Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} />
@@ -219,6 +253,9 @@ let make = () => {
     />
     <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", Chord.to_string)} />
     <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
+    <Select
+      spec=progressionTypeSpec value={progressionType->Option.mapWithDefault("None", el => el->string_of_progressionType)}
+    />
     <div> {React.string(harmonization_triad_chords)} </div>
     <div> {React.string(harmonization_triads)} </div>
     <div> {React.string("----")} </div>
@@ -229,5 +266,8 @@ let make = () => {
     <div> {React.string(notes->Intervals.relativeIntervals_of_notes->Intervals.to_string)} </div>
     <div> {React.string(notes->Intervals.absoluteIntervals_of_notes->Intervals.to_string)} </div>
     <Fretboard notes tunning />
+
+    { progression }
+
   </div>
 }

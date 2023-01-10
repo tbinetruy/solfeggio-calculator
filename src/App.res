@@ -292,6 +292,8 @@ let make = () => {
     }
 
   <div>
+    <h1>{React.string("Solfeggio calculator")}</h1>
+    <a href="https://github.com/tbinetruy/solfeggio-calculator">{React.string("Fork me on github")}</a>
     <FlexRow>{React.string("tunning: ")}<Select spec=tunningSpec value={tunning->string_of_tunning} /></FlexRow>
     <FlexRow>{React.string("key: ")}<Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} /></FlexRow>
     <FlexRow>{React.string("accidental: ")}<Select spec=accidentalSpec value={accidental->Accidental.to_string} /></FlexRow>

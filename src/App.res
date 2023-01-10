@@ -57,11 +57,11 @@ module AnnotatedFretboard = {
 @react.component
 let make = () => {
   let (rootPitchClass, setRootPitchClass) = React.useState(() => C(Accidental.Natural))
-  let (accidental, setAccidental) = React.useState(() => Accidental.Flat)
-  let (chordType, _setChordType) = React.useState(() => Some(MajorSeventh))
-  let (scaleType, _setScaleType) = React.useState(() => None)
+  let (accidental, setAccidental) = React.useState(() => Accidental.Natural)
+  let (chordType, _setChordType) = React.useState(() => None)
+  let (scaleType, _setScaleType) = React.useState(() => Some(HarmonicMinorScale))
   let (intervalType, _setIntervalType) = React.useState(() => None)
-  let (progressionType, _setProgressionType) = React.useState(() => None)
+  let (progressionType, _setProgressionType) = React.useState(() => Some([1, 4, 0]))
   let (tunning, setTunning) = React.useState(() => Standard)
   let root = rootPitchClass->Note.setAccidental(accidental)
 

@@ -54,6 +54,19 @@ module AnnotatedFretboard = {
   }
 }
 
+module FlexRow = {
+  let flexRow = ReactDOM.Style.make(
+    ~display="flex",
+    ~flexDirection="row",
+    (),
+  )
+
+  @react.component
+  let make = (~children) => {
+    <div style=flexRow>{children}</div>
+  }
+}
+
 @react.component
 let make = () => {
   let (rootPitchClass, setRootPitchClass) = React.useState(() => C(Accidental.Natural))
@@ -263,25 +276,41 @@ let make = () => {
     ->List.toArray
     ->React.array
 
+  let harmonization =
+    switch scaleType {
+      | Some(_) =>
+      <div>
+        <div> {React.string("---- Triad harmonization ----")} </div>
+        <div> {React.string(harmonization_triad_chords)} </div>
+        <div> {React.string(harmonization_triads)} </div>
+        <div> {React.string("---- Tetrad harmonization ----")} </div>
+        <div> {React.string(harmonization_tetrad_chords)} </div>
+        <div> {React.string(harmonization_tetrads)} </div>
+        <div> {React.string("---- Scale ----")} </div>
+      </div>
+        | None => <div></div>
+    }
+
   <div>
-    <Select spec=tunningSpec value={tunning->string_of_tunning} />
-    <Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} />
-    <Select spec=accidentalSpec value={accidental->Accidental.to_string} />
-    <Select
-      spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", Interval.to_string)}
-    />
-    <Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", Chord.to_string)} />
-    <Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} />
-    <Select
-      spec=progressionTypeSpec
-      value={progressionType->Option.mapWithDefault("None", el => el->string_of_progressionType)}
-    />
-    <div> {React.string(harmonization_triad_chords)} </div>
-    <div> {React.string(harmonization_triads)} </div>
-    <div> {React.string("----")} </div>
-    <div> {React.string(harmonization_tetrad_chords)} </div>
-    <div> {React.string(harmonization_tetrads)} </div>
-    <div> {React.string("----")} </div>
+    <FlexRow>{React.string("tunning: ")}<Select spec=tunningSpec value={tunning->string_of_tunning} /></FlexRow>
+    <FlexRow>{React.string("key: ")}<Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} /></FlexRow>
+    <FlexRow>{React.string("accidental: ")}<Select spec=accidentalSpec value={accidental->Accidental.to_string} /></FlexRow>
+    <FlexRow>
+      {React.string("interval: ")}
+      <Select
+        spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", Interval.to_string)}
+      />
+    </FlexRow>
+    <FlexRow>{React.string("Chord: ")}<Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", Chord.to_string)} /></FlexRow>
+    <FlexRow>{React.string("Scale: ")}<Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} /></FlexRow>
+    <FlexRow>
+      {React.string("Progression: ")}
+      <Select
+        spec=progressionTypeSpec
+        value={progressionType->Option.mapWithDefault("None", el => el->string_of_progressionType)}
+      />
+    </FlexRow>
+    {harmonization}
     <AnnotatedFretboard notes tunning />
     {progression}
   </div>

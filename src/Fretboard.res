@@ -20,6 +20,41 @@ module Tunning = {
     }
 }
 
+module Note = {
+  let getNoteStyle = interval =>
+    ReactDOM.Style.make(
+      ~width="1.5rem",
+      ~height="1.5rem",
+      ~borderRadius="50%",
+      ~background="red",
+      ~position="absolute",
+      ~top="50%",
+      ~left="50%",
+      ~transform="translate(-50%, -50%)",
+      ~display="flex",
+      ~justifyContent="center",
+      ~alignItems="center",
+      ~fontSize="0.8rem",
+      ~border="1px solid black",
+      ~backgroundColor=switch interval {
+      | Interval.Unison
+      | Interval.Octave => "#416ab0"
+      | Interval.Second(_) => "#6290bf"
+      | Interval.Third(_) => "#80b0cc"
+      | Interval.Fourth(_) => "#9bccd5"
+      | Interval.Fifth(_) => "#b6e2dc"
+      | Interval.Sixth(_) => "#cff2e0"
+      | Interval.Seventh(_) => "#e8fce1"
+      },
+      (),
+    )
+
+  @react.component
+  let make = (~note, ~interval) => {
+    <div style={getNoteStyle(interval)}> {React.string(note->to_string)} </div>
+  }
+}
+
 module String = {
   let rec createString = (startNoteHeight, length, acc) => {
     switch length {
@@ -55,33 +90,6 @@ module String = {
       ~position="relative",
       (),
     )
-    let getNoteStyle = interval =>
-      ReactDOM.Style.make(
-        ~width="1.5rem",
-        ~height="1.5rem",
-        ~borderRadius="50%",
-        ~background="red",
-        ~position="absolute",
-        ~top="50%",
-        ~left="50%",
-        ~transform="translate(-50%, -50%)",
-        ~display="flex",
-        ~justifyContent="center",
-        ~alignItems="center",
-        ~fontSize="0.8rem",
-        ~border="1px solid black",
-        ~backgroundColor=switch interval {
-        | Interval.Unison
-        | Interval.Octave => "#416ab0"
-        | Interval.Second(_) => "#6290bf"
-        | Interval.Third(_) => "#80b0cc"
-        | Interval.Fourth(_) => "#9bccd5"
-        | Interval.Fifth(_) => "#b6e2dc"
-        | Interval.Sixth(_) => "#cff2e0"
-        | Interval.Seventh(_) => "#e8fce1"
-        },
-        (),
-      )
     let stringStyle = ReactDOM.Style.make(
       ~width="2rem",
       ~height="1rem",
@@ -98,13 +106,13 @@ module String = {
         <div style=wrapperStyle key={i->string_of_int}>
           <div style=stringStyle />
           {switch note {
-          | Some(n) =>
+          | Some(note) =>
             tonic
-            ->Interval.from_notes(n)
+            ->Interval.from_notes(note)
             ->Result.mapWithDefault(
               <div> {React.string("error")} </div>,
-              i => {
-                <div style={getNoteStyle(i)}> {React.string(n->to_string)} </div>
+              interval => {
+                <Note note interval />
               },
             )
           | None => <div />

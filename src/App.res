@@ -270,7 +270,6 @@ let make = () => {
     }
     ->List.mapWithIndex((i, chord_notes) => {
       let extraNotes = notes->Notes.subtract(chord_notes)
-      Js.Console.log(("foo", extraNotes->Notes.string_of_notes))
       <AnnotatedFretboard key={i->Int.toString} notes=chord_notes tunning extraNotes />
     })
     ->List.toArray

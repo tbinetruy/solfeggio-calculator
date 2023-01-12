@@ -38,7 +38,7 @@ module Select = {
 
 module AnnotatedFretboard = {
   @react.component
-  let make = (~notes, ~tunning) => {
+  let make = (~notes, ~tunning, ~extraNotes=list{}) => {
     let chord_name =
       notes
       ->Intervals.absoluteIntervals_of_notes
@@ -49,21 +49,17 @@ module AnnotatedFretboard = {
       <div> {React.string(notes->string_of_notes ++ chord_name)} </div>
       <div> {React.string(notes->Intervals.relativeIntervals_of_notes->Intervals.to_string)} </div>
       <div> {React.string(notes->Intervals.absoluteIntervals_of_notes->Intervals.to_string)} </div>
-      <Fretboard notes tunning />
+      <Fretboard notes tunning extraNotes />
     </div>
   }
 }
 
 module FlexRow = {
-  let flexRow = ReactDOM.Style.make(
-    ~display="flex",
-    ~flexDirection="row",
-    (),
-  )
+  let flexRow = ReactDOM.Style.make(~display="flex", ~flexDirection="row", ())
 
   @react.component
   let make = (~children) => {
-    <div style=flexRow>{children}</div>
+    <div style=flexRow> {children} </div>
   }
 }
 
@@ -272,39 +268,64 @@ let make = () => {
       )->Result.getWithDefault(list{})
     | _ => list{}
     }
-    ->List.mapWithIndex((i, notes) => <AnnotatedFretboard key={i->Int.toString} notes tunning />)
+    ->List.mapWithIndex((i, chord_notes) => {
+      let extraNotes = notes->Notes.subtract(chord_notes)
+      Js.Console.log(("foo", extraNotes->Notes.string_of_notes))
+      <AnnotatedFretboard key={i->Int.toString} notes=chord_notes tunning extraNotes />
+    })
     ->List.toArray
     ->React.array
 
-  let harmonization =
-    switch scaleType {
-      | Some(_) =>
-      <div>
-        <div> {React.string("---- Triad harmonization ----")} </div>
-        <div> {React.string(harmonization_triad_chords)} </div>
-        <div> {React.string(harmonization_triads)} </div>
-        <div> {React.string("---- Tetrad harmonization ----")} </div>
-        <div> {React.string(harmonization_tetrad_chords)} </div>
-        <div> {React.string(harmonization_tetrads)} </div>
-        <div> {React.string("---- Scale ----")} </div>
-      </div>
-        | None => <div></div>
-    }
+  let harmonization = switch scaleType {
+  | Some(_) =>
+    <div>
+      <div> {React.string("---- Triad harmonization ----")} </div>
+      <div> {React.string(harmonization_triad_chords)} </div>
+      <div> {React.string(harmonization_triads)} </div>
+      <div> {React.string("---- Tetrad harmonization ----")} </div>
+      <div> {React.string(harmonization_tetrad_chords)} </div>
+      <div> {React.string(harmonization_tetrads)} </div>
+      <div> {React.string("---- Scale ----")} </div>
+    </div>
+  | None => <div />
+  }
 
   <div>
-    <h1>{React.string("Solfeggio calculator")}</h1>
-    <a href="https://github.com/tbinetruy/solfeggio-calculator">{React.string("Fork me on github")}</a>
-    <FlexRow>{React.string("tunning: ")}<Select spec=tunningSpec value={tunning->string_of_tunning} /></FlexRow>
-    <FlexRow>{React.string("key: ")}<Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} /></FlexRow>
-    <FlexRow>{React.string("accidental: ")}<Select spec=accidentalSpec value={accidental->Accidental.to_string} /></FlexRow>
+    <h1> {React.string("Solfeggio calculator")} </h1>
+    <a href="https://github.com/tbinetruy/solfeggio-calculator">
+      {React.string("Fork me on github")}
+    </a>
+    <FlexRow>
+      {React.string("tunning: ")}
+      <Select spec=tunningSpec value={tunning->string_of_tunning} />
+    </FlexRow>
+    <FlexRow>
+      {React.string("key: ")}
+      <Select spec=rootPitchSpec value={rootPitchClass->Note.to_string} />
+    </FlexRow>
+    <FlexRow>
+      {React.string("accidental: ")}
+      <Select spec=accidentalSpec value={accidental->Accidental.to_string} />
+    </FlexRow>
     <FlexRow>
       {React.string("interval: ")}
       <Select
-        spec=intervalTypeSpec value={intervalType->Option.mapWithDefault("None", Interval.to_string)}
+        spec=intervalTypeSpec
+        value={intervalType->Option.mapWithDefault("None", Interval.to_string)}
       />
     </FlexRow>
-    <FlexRow>{React.string("Chord: ")}<Select spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", Chord.to_string)} /></FlexRow>
-    <FlexRow>{React.string("Scale: ")}<Select spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)} /></FlexRow>
+    <FlexRow>
+      {React.string("Chord: ")}
+      <Select
+        spec=chordTypeSpec value={chordType->Option.mapWithDefault("None", Chord.to_string)}
+      />
+    </FlexRow>
+    <FlexRow>
+      {React.string("Scale: ")}
+      <Select
+        spec=scaleTypeSpec value={scaleType->Option.mapWithDefault("None", string_of_scale)}
+      />
+    </FlexRow>
     <FlexRow>
       {React.string("Progression: ")}
       <Select

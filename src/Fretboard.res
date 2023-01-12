@@ -20,8 +20,42 @@ module Tunning = {
     }
 }
 
-module Note = {
-  let getNoteStyle = interval =>
+module ColoredNote = {
+  type noteInfo =
+    | IntervalColor(Theory.Note.t, Theory.Note.t)
+    | ScaleColor(Theory.Note.t)
+
+  let toNote = noteInfo =>
+    switch noteInfo {
+    | IntervalColor(_, note) => note
+    | ScaleColor(note) => note
+    }
+
+  let intervalToColor = interval =>
+    switch interval {
+    | Interval.Unison
+    | Interval.Octave => "#416ab0"
+    | Interval.Second(_) => "#6290bf"
+    | Interval.Third(_) => "#80b0cc"
+    | Interval.Fourth(_) => "#9bccd5"
+    | Interval.Fifth(_) => "#b6e2dc"
+    | Interval.Sixth(_) => "#cff2e0"
+    | Interval.Seventh(_) => "#e8fce1"
+    }
+
+  let noteInfoToColor = colorType =>
+    switch colorType {
+    | IntervalColor(tonic, note) => tonic->Interval.from_notes(note)->Result.map(intervalToColor)
+    | ScaleColor(_) => Result.Ok("#eee")
+    }
+
+  let noteInfoToOpacity = colorType =>
+    switch colorType {
+    | IntervalColor(_, _) => "1"
+    | ScaleColor(_) => "0.5"
+    }
+
+  let getNoteStyle = noteInfo =>
     ReactDOM.Style.make(
       ~width="1.5rem",
       ~height="1.5rem",
@@ -36,22 +70,14 @@ module Note = {
       ~alignItems="center",
       ~fontSize="0.8rem",
       ~border="1px solid black",
-      ~backgroundColor=switch interval {
-      | Interval.Unison
-      | Interval.Octave => "#416ab0"
-      | Interval.Second(_) => "#6290bf"
-      | Interval.Third(_) => "#80b0cc"
-      | Interval.Fourth(_) => "#9bccd5"
-      | Interval.Fifth(_) => "#b6e2dc"
-      | Interval.Sixth(_) => "#cff2e0"
-      | Interval.Seventh(_) => "#e8fce1"
-      },
+      ~backgroundColor=noteInfo->noteInfoToColor->Result.getWithDefault(""),
+      ~opacity=noteInfo->noteInfoToOpacity,
       (),
     )
 
   @react.component
-  let make = (~note, ~interval) => {
-    <div style={getNoteStyle(interval)}> {React.string(note->to_string)} </div>
+  let make = (~noteInfo) => {
+    <div style={getNoteStyle(noteInfo)}> {React.string(noteInfo->toNote->to_string)} </div>
   }
 }
 
@@ -64,17 +90,21 @@ module String = {
     }
   }
 
-  let drawNotesOnString = (chord, fretZeroNote) => {
+  let drawNotesOnString = (chord, tonic, fretZeroNote, extraNotes) => {
     let fretZeroHight = fretZeroNote->to_semitones
     fretZeroHight
     ->createString(13, list{})
     ->List.map(currentSemitone => {
-      chord->List.reduce(None, (acc, note) =>
+      chord
+      ->List.map(note => ColoredNote.IntervalColor(tonic, note))
+      ->List.concat(extraNotes->List.map(note => ColoredNote.ScaleColor(note)))
+      ->List.reduce(None, (acc, noteInfo) =>
         switch acc {
         | None =>
+          let note = noteInfo->ColoredNote.toNote
           let noteSemitone =
             note->to_semitones < 0 ? mod(12 + note->to_semitones, 12) : mod(note->to_semitones, 12)
-          noteSemitone == currentSemitone ? Some(note) : None
+          noteSemitone == currentSemitone ? Some(noteInfo) : None
         | Some(_) => acc
         }
       )
@@ -82,7 +112,7 @@ module String = {
   }
 
   @react.component
-  let make = (~notes, ~rootNote) => {
+  let make = (~notes, ~fretZeroNote, ~extraNotes) => {
     let wrapperStyle = ReactDOM.Style.make(
       ~width="2rem",
       ~height="2rem",
@@ -101,20 +131,12 @@ module String = {
     ->getTonic
     ->Option.mapWithDefault(<div> {React.string("Error")} </div>, tonic => {
       notes
-      ->drawNotesOnString(rootNote)
-      ->List.mapWithIndex((i, note) =>
+      ->drawNotesOnString(tonic, fretZeroNote, extraNotes)
+      ->List.mapWithIndex((i, noteInfo) =>
         <div style=wrapperStyle key={i->string_of_int}>
           <div style=stringStyle />
-          {switch note {
-          | Some(note) =>
-            tonic
-            ->Interval.from_notes(note)
-            ->Result.mapWithDefault(
-              <div> {React.string("error")} </div>,
-              interval => {
-                <Note note interval />
-              },
-            )
+          {switch noteInfo {
+          | Some(noteInfo) => <ColoredNote noteInfo />
           | None => <div />
           }}
         </div>
@@ -169,11 +191,11 @@ module FretNumbers = {
   }
 }
 
-let drawFretboard = (notes, tunning) => {
+let drawFretboard = (notes, tunning, extraNotes) => {
   tunning
   ->List.mapWithIndex((i, fretZeroNote) =>
     <div style={ReactDOM.Style.make(~display="flex", ())} key={i->string_of_int}>
-      <String notes={notes} rootNote={fretZeroNote} />
+      <String notes={notes} fretZeroNote extraNotes />
     </div>
   )
   ->List.toArray
@@ -181,9 +203,9 @@ let drawFretboard = (notes, tunning) => {
 }
 
 @react.component
-let make = (~notes, ~tunning) => {
+let make = (~notes, ~tunning, ~extraNotes=list{}) => {
   <div>
-    <div> {notes->drawFretboard(tunning->Tunning.build_tunning)} </div>
+    <div> {notes->drawFretboard(tunning->Tunning.build_tunning, extraNotes)} </div>
     <FretNumbers numbers={list{1, 3, 5, 7, 9, 12}} />
   </div>
 }

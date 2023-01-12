@@ -55,6 +55,12 @@ module ColoredNote = {
     | ScaleColor(_) => "0.5"
     }
 
+  let noteInfoToScale = colorType =>
+    switch colorType {
+    | IntervalColor(_, _) => "1"
+    | ScaleColor(_) => "0.75"
+    }
+
   let getNoteStyle = noteInfo =>
     ReactDOM.Style.make(
       ~width="1.5rem",
@@ -64,7 +70,7 @@ module ColoredNote = {
       ~position="absolute",
       ~top="50%",
       ~left="50%",
-      ~transform="translate(-50%, -50%)",
+      ~transform="translate(-50%, -50%)" ++ "scale(" ++ noteInfo->noteInfoToScale ++ ")",
       ~display="flex",
       ~justifyContent="center",
       ~alignItems="center",

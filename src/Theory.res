@@ -118,6 +118,22 @@ module Notes = {
     notes
     ->List.reduce("", (acc, note) => acc ++ note->Note.to_string ++ "  ")
     ->Js.String2.slice(~from=0, ~to_=-2)
+
+  let intersection = (notesA, notesB) =>
+      notesA->List.reduceReverse(list{}, (acc, note) =>
+        switch notesB->List.has(note, (a, b) => a == b) {
+          | true => list{note, ...acc}
+          | false => acc
+        }
+      )
+
+  let subtract = (notesA, notesB) =>
+      notesA->List.reduceReverse(list{}, (acc, note) =>
+        switch notesB->List.has(note, (a, b) => a == b) {
+          | true => acc
+          | false => list{note, ...acc}
+        }
+      )
 }
 
 module Progression = {

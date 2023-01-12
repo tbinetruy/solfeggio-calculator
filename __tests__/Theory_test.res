@@ -417,3 +417,32 @@ describe("scale progression", () => {
     expect(progression)->toEqual(expected)
   })
 })
+
+
+describe("notes", () => {
+  open Expect
+
+  test("non-empty intersection", () => {
+    let notesA = list{A(Natural), C(Natural), E(Natural)}
+    let notesB = list{C(Natural), E(Natural), G(Natural)}
+
+    let expected = list{C(Natural), E(Natural)}
+    expect(notesA->Notes.intersection(notesB))->toEqual(expected)
+  })
+
+  test("empty intersection", () => {
+    let notesA = list{A(Natural), C(Natural), E(Natural)}
+    let notesB = list{B(Natural), D(Natural), F(Natural)}
+
+    let expected = list{}
+    expect(notesA->Notes.intersection(notesB))->toEqual(expected)
+  })
+
+  test("subtraction", () => {
+    let scale_notes = C(Natural)->Scale.to_notes(MajorScale)
+    let c_major_seventh = C(Natural)->Chord.to_notes(MajorSeventh)
+
+    let expected = list{D(Natural), F(Natural), A(Natural)}
+    expect(scale_notes->Notes.subtract(c_major_seventh))->toEqual(expected)
+  })
+})

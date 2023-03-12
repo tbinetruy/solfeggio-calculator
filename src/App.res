@@ -244,7 +244,11 @@ let make = () => {
     )
 
   let progressionTypeSpec =
-    [[1, 4, 0]]
+    [
+    [1, 4, 0],
+    [0, 1, 2, 3, 4, 5, 6],
+    [0, 6, 3],
+    ]
     ->Array.map(el => Some(el))
     ->Array.concat([None])
     ->Array.reduceU(StringMap.empty, (. acc, el) =>

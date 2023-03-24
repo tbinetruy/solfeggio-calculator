@@ -1,0 +1,110 @@
+* Arpeggios that work well on Cmaj7 in C major
+
+The goal of this section is to construct chords that make sense.
+
+Consider the ~C~ major scale:
+
+#+begin_src
+C D E F G A B
+#+end_src
+
+Recall the number of steps between each notes:
+
+| Notes | steps |    interval     |
+|-------+-------+-----------------|
+| ~C−D~ |     2 |    second major |
+| ~D−E~ |     2 |    second major |
+| ~E−F~ |     1 |    second minor |
+| ~F−G~ |     2 |    second major |
+| ~G−A~ |     2 |    second major |
+| ~A−B~ |     2 |    second major |
+| ~B−C~ |     1 |    second minor |
+
+Since we always take the distance between to /contiguous/ notes from the scale, we call the interval *second*. And since the number of steps between these two notes are not always the same − sometimes it's one step, sometimes it's two − we /qualify/ these intervals of *major* when the number of steps between both contiguous notes is *2* and *minor* when it is *1*.
+
+Now, we can start constructing some more complex intervals, and once we have those, we'll be able to construct chords.
+
+We call the distance between three contiguous notes a *third*. These are constructed by adding two contiguous *seconds* from the scale:
+
+| third | second + second                               | steps     | name        |
+|-------+-----------------------------------------------+-----------+-------------|
+| ~C−E~ | ~C−D + D−E~ (*major* second + *major* second) | 2 + 2 = 4 | major third |
+| ~D−F~ | ~D−E + E−F~ (*major* second + *minor* second) | 2 + 1 = 3 | minor third |
+| ~E−G~ | ~E−F + F−G~ (*minor* second + *major* second) | 1 + 2 = 3 | minor third |
+| ~F−A~ | ~F−G + G−A~ (*major* second + *major* second) | 2 + 2 = 4 | major third |
+| ~G−B~ | ~G−A + A−B~ (*major* second + *major* second) | 2 + 2 = 4 | major third |
+| ~A−C~ | ~A−B + B−C~ (*major* second + *minor* second) | 2 + 1 = 3 | minor third |
+| ~B−D~ | ~B−C + C−D~ (*minor* second + *major* second) | 1 + 2 = 3 | minor third |
+
+We can now start constructing /diatonic/ *chords*. Chords are a group of more than two notes (since a group of two notes is an /interval/), and diatonic chords are chords constructed with notes for the scale. Since we're using the ~C~ *major* scale, it's simply ~C~, ~D~, ~E~, ~F~, ~G~, ~A~ and ~B~, (no sharps and not flats, we don't even know what those are yet). So for example, ~CDEF~ is a chord, so is ~GAD~, so is ~CDEFGAB~ technically!
+
+Since there are so many chords available to us, let's restrict ourselves and /construct/ them a particular way: we are going to take some note we'll call the *root* and *stack thirds* on top of it. Meaning we won't take any random thirds, but taken /contigous/ thirds fro the scale. If I take ~C~ as my root note, the first third is ~C−E~ and the second third ~E−G~. This results with the chord ~C−E−G~ where, starting from ~C~, we stacked a *major* third and a *minor* third on top of each other. Chords that consist of three notes are called *triads*.
+
+We can repeat this process for each of the notes from our scale, what we're essentially doing is constructing chords by skipping notes in the scale:
+
+| Root | Triad + Triad |   |   |   |
+|------+---------------+---+---+---|
+|      |               |   |   |   |
+
+
+Since chords are constructed by stacking thirds, we can generate two arpeggios that are not ~Cmaj7~ but that will share notes by staking thirds on top of ~Cmaj7~'s third and fifth:
+
+- ~Emin7~ will share three notes with ~Cmaj7~: the third, fifth and seventh (~E~, ~G~ and ~B~)
+- ~G7~ will share two nots with ~Cmaj7~: the fifth and the seventh (~G~ and ~B~).
+
+Note the most characteristic degrees from a chord are its third and its seventh, since all of the major scale's diatonic chord contain a perfect fifth (that is, playing only the root and the fifth for any of the diatonic chord will result in the same interval). Then ~Emin7~ will sound /closer/ to ~Cmaj7~ than ~G7~ will.
+
+We can also go the other way around, that is constructing a chord such that the third, fifth and seventh are ~Cmaj7~'s root, the third and fifth respectively. This is exactly the diatonic chord based off of the ~C~ major scale's 6th degree. Indeed, in the major scale, the adding a third to the 6th degree results in the root (the octave). Hence, ~Amin7~, consisting of ~A~, ~C~, ~E~ and ~G~ share three notes with ~Cmaj7~. We could consider that ~Amin7~ is the same distance from ~Cmaj7~ as is ~Emin7~ since ~Amin7~ shares the third but not the seventh, and ~Emin7~ shares the seventh but not the third with ~Cmaj7~.
+
+Finally, following the same logic, ~Fmaj7~ will contain ~Cmaj7~'s root and third making it an arpeggio that can be played over the major scale's first diatonic chord. This chord will be "further away" form ~Cmaj7~ that ~Amin7~ is since it will only share two notes with ~Cmaj7~ as opposed to three notes (since ~Cmaj7~'s fifth will not be contained in ~Fmaj7~).
+
+Here is a more visual way to see which notes are shared between the four arpeggios that can work over a ~Cmaj7~ chord.
+
+| Chord | Notes           |
+|-------+-----------------|
+| Cmaj7 | _ _ C E G B _ _ |
+| Emin7 | _ _ _ E G B D _ |
+| G7    | _ _ _ _ G B D F |
+| Amin7 | _ A C E G _ _ _ |
+| Fmaj7 | F A C E _ _ _ _ |
+
+Using this method: exploiting the fact that diatonic chords are build by staking thirds to construct chords that will share notes, we can find arpeggios that are not diatonic chords but will still work very well over diatonic progressions.
+
+* C Major scale modes
+
+| mode       | n_flats | n_sharps | flats         | sharps |
+|------------+---------+----------+---------------+--------|
+| Lydian     |         |        1 |               | F      |
+| Ionian     |       0 |        0 |               |        |
+| Mixolidian |       1 |        0 | B             |        |
+| Dorian     |       2 |        0 | B, E          |        |
+| Aeolian    |       3 |        0 | B, E, A       |        |
+| Phrygian   |       4 |        0 | B, E, A, D    |        |
+| Iocrian    |       5 |        0 | B, E, A, D, G |        |
+
+* G Major scale modes
+
+| mode       | n_flats | n_sharps | flats      | sharps |
+|------------+---------+----------+------------+--------|
+| Lydian     |         |        2 |            | C, F   |
+| Ionian     |         |        1 |            | F      |
+| Mixolidian |         |          |            |        |
+| Dorian     |       1 |          | B          |        |
+| Aeolian    |       2 |          | B, E       |        |
+| Phrygian   |       3 |          | B, E, A    |        |
+| Iocrian    |       4 |          | B, E, A, D |        |
+
+
+* B Major scale modes
+
+| mode       | n_flats | n_sharps | flats | sharps           |
+|------------+---------+----------+-------+------------------|
+| Lydian     |         |        6 |       | C, D, E, F, G, A |
+| Ionian     |         |        5 |       | C, D, F, G, A    |
+| Mixolidian |         |        4 |       | C, D, F, G       |
+| Dorian     |         |        3 |       | C, F, G          |
+| Aeolian    |         |        2 |       | C, F             |
+| Phrygian   |         |        1 |       | F                |
+| Iocrian    |         |          |       |                  |
+
+Do all modes have a key with no flats nor sharps ?
